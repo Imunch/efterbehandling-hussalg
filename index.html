@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="da" class="auth-gate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efterbehandling efter hussalg — Dashboard</title>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #1f4e79;
+    --primary-light: #d9e1f2;
+    --primary-soft: #eff4fb;
+    --success: #16a34a;
+    --success-bg: #dcfce7;
+    --warning: #d97706;
+    --warning-bg: #fef3c7;
+    --danger: #dc2626;
+    --pending: #6b7280;
+    --pending-bg: #f1f5f9;
+    --na: #9ca3af;
+    --na-bg: #e5e7eb;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(15,23,42,0.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1f4e79 0%, #2563eb 100%);
+    color: white;
+    padding: 24px 32px;
+    box-shadow: var(--shadow);
+  }
+  .header-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 28px;
+    align-items: start;
+  }
+  header h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
+  header p { margin: 0; opacity: 0.85; font-size: 14px; }
+  header p.created-by {
+    margin-top: 6px;
+    font-size: 12px;
+    opacity: 0.75;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .header-side {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .disclaimer {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-left: 3px solid #fbbf24;
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .disclaimer strong { color: #fde68a; }
+  .disclaimer a {
+    color: #fde68a;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .disclaimer a:hover { color: #fff; }
+  .storage-note {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  @media (max-width: 900px) {
+    .header-grid { grid-template-columns: 1fr; }
+  }
+  .btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  .btn:hover { background: rgba(255,255,255,0.25); }
+  .btn-sm {
+    font-size: 12px;
+    padding: 6px 10px;
+    background: white;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: background 0.1s, border-color 0.1s;
+  }
+  .btn-sm:hover { background: var(--primary-soft); border-color: var(--primary); }
+  .btn-sm.primary { background: var(--primary); color: white; border-color: var(--primary); }
+  .btn-sm.primary:hover { background: #1a3f63; }
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 32px 60px;
+  }
+  .sagsdata {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .sagsdata h2 { margin: 0 0 4px; font-size: 15px; color: var(--primary); letter-spacing: 0.02em; text-transform: uppercase; }
+  .sagsdata .hint { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+  .sagsdata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .field input {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+  }
+  .field input:focus { outline: 2px solid var(--primary-light); border-color: var(--primary); }
+
+  .summary {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .summary-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .summary-head h2 { margin: 0; font-size: 15px; color: var(--primary); letter-spacing: 0.02em; text-transform: uppercase; }
+  .total-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .total-progress .pct {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .total-bar {
+    flex: 1;
+    max-width: 300px;
+    min-width: 160px;
+    height: 10px;
+    background: var(--pending-bg);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .total-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    transition: width 0.3s;
+  }
+  .areas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .area-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+  .area-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+  }
+  .area-card h3 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+  .area-card .count { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .mini-bar { height: 6px; background: var(--pending-bg); border-radius: 3px; overflow: hidden; }
+  .mini-bar-fill { height: 100%; background: var(--success); transition: width 0.3s; }
+  .area-pct { font-size: 12px; color: var(--muted); margin-top: 4px; text-align: right; }
+
+  .area-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .area-section h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+    color: var(--primary);
+  }
+  .area-section .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-family: inherit;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .tab-count {
+    display: inline-block;
+    background: var(--pending-bg);
+    color: var(--muted);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  .tab.active .tab-count { background: var(--primary-soft); color: var(--primary); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
+  .task {
+    display: grid;
+    grid-template-columns: 32px 1fr 160px;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    align-items: start;
+    transition: background 0.1s;
+  }
+  .task:hover { background: var(--surface-2); }
+  .task.done { opacity: 0.7; background: var(--success-bg); border-color: #bbf7d0; }
+  .task.done .task-title { text-decoration: line-through; color: var(--muted); }
+  .task.na { opacity: 0.5; background: var(--na-bg); }
+  .task.na .task-title { text-decoration: line-through; color: var(--muted); }
+  .task-idx {
+    color: var(--muted);
+    font-size: 12px;
+    padding-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .task-main { min-width: 0; }
+  .task-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .task-meta { color: var(--muted); font-size: 12px; }
+  .task-notes {
+    width: 100%;
+    margin-top: 6px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 28px;
+    background: white;
+  }
+  .task-notes:focus { outline: 2px solid var(--primary-light); border-color: var(--primary); }
+  select.status {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  select.status.s-done { background: var(--success-bg); color: #065f46; border-color: #bbf7d0; font-weight: 500; }
+  select.status.s-progress { background: var(--warning-bg); color: #92400e; border-color: #fde68a; font-weight: 500; }
+  select.status.s-wait { background: #fed7aa; color: #9a3412; border-color: #fdba74; font-weight: 500; }
+  select.status.s-na { background: var(--na-bg); color: var(--muted); font-style: italic; }
+  .deadline-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 3px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+
+  /* Templates */
+  .template-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 16px;
+  }
+  .template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .template-item {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-2);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.1s;
+  }
+  .template-item:hover { border-color: var(--primary); background: white; }
+  .template-item.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    font-weight: 500;
+    color: var(--primary);
+  }
+  .template-item .ti-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: normal; }
+  .template-view {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+  }
+  .template-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .template-toolbar .name { font-size: 13px; font-weight: 600; color: var(--primary); }
+  .template-toolbar .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .template-body {
+    padding: 16px;
+    white-space: pre-wrap;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #0f172a;
+    min-height: 300px;
+    outline: none;
+  }
+  .template-body.editable:focus { background: #fffbeb; }
+  .placeholder-pill {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 0 2px;
+  }
+  .placeholder-missing {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  .template-footer {
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Guide */
+  .guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  .guide-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: var(--surface-2);
+  }
+  .guide-card h4 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .guide-card p { margin: 0 0 6px; font-size: 13px; }
+  .guide-card ul { margin: 6px 0 0; padding-left: 20px; font-size: 13px; }
+  .guide-card li { margin-bottom: 4px; }
+  .guide-card code {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: "SF Mono", Consolas, monospace;
+  }
+
+  /* Resources */
+  .resource-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .resource {
+    display: block;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    background: white;
+    transition: all 0.1s;
+  }
+  .resource:hover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .resource-label {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--primary);
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .resource-desc { font-size: 12px; color: var(--muted); }
+  .resource-url { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: "SF Mono", Consolas, monospace; }
+
+  .missing-warn {
+    background: #fef3c7;
+    border-left: 3px solid #f59e0b;
+    padding: 10px 12px;
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: #92400e;
+    margin-bottom: 12px;
+  }
+  .missing-warn strong { display: block; margin-bottom: 3px; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: #0f172a;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 820px) {
+    .template-layout { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    header, main { padding-left: 16px; padding-right: 16px; }
+    .task { grid-template-columns: 24px 1fr; }
+    .task select.status { grid-column: 1 / -1; justify-self: start; }
+  }
+  @media print {
+    header, .toolbar, .tabs, .template-toolbar, .template-footer, .login-overlay { display: none !important; }
+    .tab-panel { display: block !important; page-break-inside: avoid; }
+    .area-section { break-inside: avoid; box-shadow: none; border: 1px solid var(--border); }
+  }
+
+  /* ---- Login ---- */
+  html.auth-gate body.locked header,
+  html.auth-gate body.locked main,
+  html.auth-gate body.locked .toast { display: none !important; }
+  body.locked { overflow: hidden; }
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1f4e79 0%, #2563eb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .login-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .login-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 12px;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 32px 32px 28px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    width: 100%;
+    max-width: 360px;
+  }
+  .login-card h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    color: var(--primary);
+  }
+  .login-card .sub {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .login-card label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .login-card input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 14px;
+  }
+  .login-card input:focus {
+    outline: 2px solid var(--primary-light);
+    border-color: var(--primary);
+  }
+  .login-card button {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 11px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 4px;
+  }
+  .login-card button:hover { background: #1a3f63; }
+  .login-error {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 10px;
+    min-height: 16px;
+  }
+  .login-credit {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body class="locked">
+
+<div class="login-overlay" id="login-overlay">
+  <form class="login-card" id="login-form" onsubmit="return doLogin(event)">
+    <h2>Log ind</h2>
+    <p class="sub">Adgang til Efterbehandling-dashboardet</p>
+    <label for="login-user">Brugernavn</label>
+    <input type="text" id="login-user" autocomplete="username" required autofocus>
+    <label for="login-pass">Adgangskode</label>
+    <input type="password" id="login-pass" autocomplete="current-password" required>
+    <button type="submit">Log ind</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-hint">Sessionen udløber efter 30 minutters inaktivitet.</div>
+    <div class="login-credit">Created by Q4 Company</div>
+  </form>
+</div>
+
+<header>
+  <div class="header-grid">
+    <div>
+      <h1>Efterbehandling efter hussalg</h1>
+      <p>Dashboard med tjekliste, skabeloner og guide for hver fase</p>
+      <p class="created-by">Created by Q4 Company</p>
+      <div class="toolbar">
+        <button class="btn" onclick="exportJSON()">↓ Eksporter JSON</button>
+        <button class="btn" onclick="document.getElementById('import-file').click()">↑ Importer JSON</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+        <button class="btn" onclick="printDashboard()">🖨 Print</button>
+        <button class="btn" onclick="resetAll()">↻ Nulstil</button>
+        <button class="btn" onclick="doLogout()">⎋ Log ud</button>
+      </div>
+    </div>
+    <div class="header-side">
+      <div class="disclaimer">
+        <strong>Ansvarsfraskrivelse:</strong> Generel information om efterbehandling efter hussalg i Danmark — ikke juridisk, skattemæssig eller forsikringsmæssig rådgivning. Skabeloner og guides er vejledende. Takster, frister og regler ændres løbende — verificér på <a href="https://www.skat.dk" target="_blank" rel="noopener">skat.dk</a>, <a href="https://www.tinglysning.dk" target="_blank" rel="noopener">tinglysning.dk</a> og <a href="https://www.borger.dk" target="_blank" rel="noopener">borger.dk</a>. Ved tvivl: kontakt revisor eller boligadvokat.
+      </div>
+      <div class="storage-note">
+        Data gemmes lokalt i browseren. Brug "Eksporter JSON" for backup eller til at flytte mellem enheder.
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="sagsdata">
+    <h2>Sagsdata</h2>
+    <div class="hint">Felterne her fletter automatisk ind i alle skabeloner længere nede.</div>
+    <div class="sagsdata-grid" id="sagsdata-grid"></div>
+  </section>
+
+  <section class="summary">
+    <div class="summary-head">
+      <h2>Samlet fremdrift</h2>
+      <div class="total-progress">
+        <div class="total-bar"><div class="total-bar-fill" id="total-bar"></div></div>
+        <div class="pct" id="total-pct">0 %</div>
+      </div>
+    </div>
+    <div class="areas" id="areas-summary"></div>
+  </section>
+
+  <div id="area-sections"></div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================================
+// LOGIN (PBKDF2-SHA256, rate limiting, session timeout)
+// ============================================================================
+// Password is stored ONLY as a PBKDF2 hash (250.000 iterationer, SHA-256, per-user salt).
+// Dette forhindrer at adgangskoden "Q4" står i klartekst i kildekoden.
+// BEMÆRK: Single-file klient-login er aldrig fuldt sikkert — en målrettet angriber
+// kan teoretisk bruteforce en kort adgangskode. Til rigtig sikkerhed: brug server
+// eller fuld-indholds-kryptering (fx staticrypt).
+const AUTH_CONFIG = {
+  iterations: 250000,
+  users: {
+    "kunde": {
+      salt: "2Clbk2X4wzuhJh2mF5y1bA==",
+      hash: "soic9xDhwQHVG2M13ADCa7qv6zboawDbSigmNqEpRsU="
+    }
+  }
+};
+const AUTH_KEY = "efterbehandling-auth-v2";
+const AUTH_ATTEMPTS_KEY = "efterbehandling-attempts-v1";
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutter inaktivitet
+const MAX_FAILED_ATTEMPTS = 5;
+
+function b64ToBytes(b64) {
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+function bytesToB64(bytes) {
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s);
+}
+function constantTimeEq(a, b) {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+async function deriveHash(password, username, saltB64, iterations) {
+  const enc = new TextEncoder();
+  const saltBase = b64ToBytes(saltB64);
+  const userBytes = enc.encode(":" + username);
+  const salted = new Uint8Array(saltBase.length + userBytes.length);
+  salted.set(saltBase, 0);
+  salted.set(userBytes, saltBase.length);
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: salted, iterations, hash: "SHA-256" },
+    keyMaterial, 256
+  );
+  return bytesToB64(new Uint8Array(bits));
+}
+
+function getAttempts() {
+  try { return JSON.parse(sessionStorage.getItem(AUTH_ATTEMPTS_KEY) || '{"count":0,"lockUntil":0}'); }
+  catch { return { count: 0, lockUntil: 0 }; }
+}
+function setAttempts(a) {
+  try { sessionStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(a)); } catch {}
+}
+function lockoutSeconds(count) {
+  if (count < 3) return 0;
+  if (count === 3) return 15;
+  if (count === 4) return 60;
+  return 300; // 5 min, vokser ikke yderligere
+}
+
+function isLoggedIn() {
+  try {
+    const raw = sessionStorage.getItem(AUTH_KEY);
+    if (!raw) return false;
+    const { t } = JSON.parse(raw);
+    if (!t || Date.now() - t > SESSION_TIMEOUT_MS) {
+      sessionStorage.removeItem(AUTH_KEY);
+      return false;
+    }
+    return true;
+  } catch { return false; }
+}
+function refreshSession() {
+  if (isLoggedIn()) {
+    try { sessionStorage.setItem(AUTH_KEY, JSON.stringify({ t: Date.now() })); } catch {}
+  }
+}
+function showLogin() {
+  document.body.classList.add("locked");
+  document.getElementById("login-overlay").style.display = "flex";
+  setTimeout(() => document.getElementById("login-user")?.focus(), 50);
+  updateLockoutUI();
+}
+function hideLogin() {
+  document.body.classList.remove("locked");
+  document.getElementById("login-overlay").style.display = "none";
+}
+
+let lockoutTimer = null;
+function updateLockoutUI() {
+  const a = getAttempts();
+  const btn = document.querySelector("#login-form button[type=submit]");
+  const err = document.getElementById("login-error");
+  const now = Date.now();
+  if (a.lockUntil > now) {
+    const s = Math.ceil((a.lockUntil - now) / 1000);
+    btn.disabled = true;
+    err.textContent = `For mange forsøg. Prøv igen om ${s} sekunder.`;
+    if (!lockoutTimer) {
+      lockoutTimer = setInterval(() => {
+        const a2 = getAttempts();
+        const left = Math.ceil((a2.lockUntil - Date.now()) / 1000);
+        if (left <= 0) {
+          clearInterval(lockoutTimer);
+          lockoutTimer = null;
+          btn.disabled = false;
+          err.textContent = "";
+        } else {
+          err.textContent = `For mange forsøg. Prøv igen om ${left} sekunder.`;
+        }
+      }, 500);
+    }
+  } else {
+    btn.disabled = false;
+  }
+}
+
+async function doLogin(ev) {
+  ev.preventDefault();
+  const attempts = getAttempts();
+  if (attempts.lockUntil > Date.now()) { updateLockoutUI(); return false; }
+
+  const u = document.getElementById("login-user").value.trim().toLowerCase();
+  const p = document.getElementById("login-pass").value;
+  const err = document.getElementById("login-error");
+  const btn = document.querySelector("#login-form button[type=submit]");
+  err.textContent = "";
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = "Verificerer…";
+
+  let ok = false;
+  try {
+    const rec = AUTH_CONFIG.users[u];
+    if (rec) {
+      const derived = await deriveHash(p, u, rec.salt, AUTH_CONFIG.iterations);
+      ok = constantTimeEq(derived, rec.hash);
+    } else {
+      // Dummy-derivering for at udligne svartid
+      await deriveHash(p, "x", "AAAAAAAAAAAAAAAAAAAAAA==", AUTH_CONFIG.iterations);
+    }
+  } catch (e) {
+    console.error("Login error", e);
+  }
+
+  btn.textContent = originalLabel;
+  document.getElementById("login-pass").value = "";
+
+  if (ok) {
+    try { sessionStorage.setItem(AUTH_KEY, JSON.stringify({ t: Date.now() })); } catch {}
+    setAttempts({ count: 0, lockUntil: 0 });
+    btn.disabled = false;
+    hideLogin();
+  } else {
+    const nextCount = attempts.count + 1;
+    const lockSec = lockoutSeconds(nextCount);
+    setAttempts({
+      count: nextCount,
+      lockUntil: lockSec > 0 ? Date.now() + lockSec * 1000 : 0
+    });
+    if (nextCount >= MAX_FAILED_ATTEMPTS) {
+      err.textContent = "For mange fejlede forsøg. Adgangen er midlertidigt spærret.";
+    } else {
+      err.textContent = "Forkert brugernavn eller adgangskode.";
+    }
+    document.getElementById("login-pass").focus();
+    updateLockoutUI();
+  }
+  return false;
+}
+
+function doLogout() {
+  try { sessionStorage.removeItem(AUTH_KEY); } catch {}
+  showLogin();
+}
+
+// Gate FØR DOM-klar, så indhold ikke flimrer
+document.documentElement.classList.add("auth-gate");
+document.addEventListener("DOMContentLoaded", () => {
+  if (isLoggedIn()) {
+    hideLogin();
+    refreshSession();
+  } else {
+    showLogin();
+  }
+  // Hold session i live ved aktivitet
+  ["click","keydown","mousemove","scroll"].forEach(ev =>
+    window.addEventListener(ev, () => refreshSession(), { passive: true })
+  );
+  // Tjek session-udløb periodisk
+  setInterval(() => {
+    if (!isLoggedIn() && document.getElementById("login-overlay").style.display === "none") {
+      showLogin();
+    }
+  }, 60000);
+});
+
+// ============================================================================
+// DATA MODEL
+// ============================================================================
+
+const SAGSDATA_FIELDS = [
+  { key: "saelger", label: "Sælgers fulde navn" },
+  { key: "saelgerCPR", label: "Sælgers CPR (valgfri)" },
+  { key: "nyAdresse", label: "Sælgers nye adresse" },
+  { key: "saelgerTlf", label: "Sælgers telefon" },
+  { key: "saelgerEmail", label: "Sælgers e-mail" },
+  { key: "ejendom", label: "Solgt ejendom (adresse)" },
+  { key: "bbr", label: "Ejendoms-/BBR-nr." },
+  { key: "matrikel", label: "Matrikelnr." },
+  { key: "koeber", label: "Købers navn" },
+  { key: "overtagelse", label: "Overtagelsesdato" },
+  { key: "skaering", label: "Skæringsdato" },
+  { key: "maegler", label: "Ejendomsmægler (firma + navn)" },
+  { key: "advokat", label: "Boligadvokat (firma + navn)" },
+  { key: "bank", label: "Bank" },
+  { key: "realkredit", label: "Realkreditinstitut" },
+  { key: "forsikring", label: "Forsikringsselskab (hus/indbo)" },
+  { key: "ejerskifte", label: "Ejerskifteforsikring" },
+  { key: "refusionskonto", label: "Konto til refusion (reg/kt)" },
+];
+
+// Helper: return sagsdata value or an alert if missing
+function sd(key) {
+  const v = (state.sagsdata[key] || "").trim();
+  return v || `[${key}]`;
+}
+function sdLabel(key) {
+  return SAGSDATA_FIELDS.find(f => f.key === key)?.label || key;
+}
+
+// ============================================================================
+// AREAS WITH TASKS, TEMPLATES, GUIDE, RESOURCES
+// ============================================================================
+
+const AREAS = [
+  {
+    id: "folkeregister",
+    name: "Folkeregister & adresseændring",
+    icon: "🏠",
+    sub: "Flyt adresse i folkeregister, forsikringer, bank, abonnementer og offentlige registre.",
+    tasks: [
+      { t: "Folkeregister: adresseændring", m: "borger.dk / kommunen", d: "Senest 5 dage efter flytning" },
+      { t: "Posten: opret eftersendelse", m: "postnord.dk", d: "På overtagelsesdagen" },
+      { t: "Skattestyrelsen: opdater adresse", m: "skat.dk", d: "Straks efter salg" },
+      { t: "Digital Post / e-Boks", m: "kontroller ny adresse", d: "Efter flytning" },
+      { t: "Sundhedskort / læge", m: "borger.dk / sundhed.dk", d: "Efter flytning" },
+      { t: "Tandlæge", m: "", d: "Efter flytning" },
+      { t: "Indboforsikring: adresseændring", m: "", d: "Inden overtagelse" },
+      { t: "Husforsikring: opsigelse", m: "", d: "Pr. overtagelsesdato" },
+      { t: "Ulykkes-/sundhedsforsikring", m: "", d: "Efter flytning" },
+      { t: "Bilforsikring: adresseændring", m: "", d: "Efter flytning" },
+      { t: "Pensions-/livsforsikring", m: "", d: "Efter flytning" },
+      { t: "Bank: adresseændring", m: "", d: "Efter flytning" },
+      { t: "Kreditkortselskaber", m: "", d: "Efter flytning" },
+      { t: "Pensionsselskab (ATP, PFA, AP mv.)", m: "", d: "Efter flytning" },
+      { t: "A-kasse / fagforening", m: "", d: "Efter flytning" },
+      { t: "Arbejdsgiver (lønadresse)", m: "", d: "Efter flytning" },
+      { t: "Avisabonnement / magasiner", m: "", d: "Inden flytning" },
+      { t: "Streaming-tjenester", m: "Netflix, Spotify, HBO mv.", d: "Efter flytning" },
+      { t: "Kørekort (adresse)", m: "borger.dk", d: "Inden 14 dage" },
+      { t: "Motorstyrelsen (garage/P-plads)", m: "", d: "Efter flytning" },
+      { t: "Grundejerforening: udmeldelse", m: "", d: "Pr. overtagelsesdato" },
+      { t: "Skole / daginstitution (børn)", m: "", d: "Før flytning" },
+      { t: "Dyrlæge (kæledyr)", m: "", d: "Efter flytning" },
+      { t: "Webshops / faste leverandører", m: "Nemlig, Apotek mv.", d: "Efter flytning" },
+      { t: "Bibliotek (ny kommune)", m: "", d: "Efter flytning" },
+      { t: "Foreninger / klubber", m: "", d: "Efter flytning" },
+    ],
+    templates: [
+      {
+        id: "adresseaendring",
+        name: "Generisk adresseændring",
+        desc: "Alt-i-én brev/e-mail du kan sende til fx bank, forsikring, abonnementer",
+        uses: ["saelger","ejendom","nyAdresse","overtagelse","saelgerTlf","saelgerEmail","saelgerCPR"],
+        build: () => `Emne: Adresseændring — ${sd("saelger")}
+
+Kære modtager,
+
+Jeg skriver for at oplyse om min nye adresse pr. ${sd("overtagelse")}:
+
+Ny adresse:
+${sd("nyAdresse")}
+
+Gammel adresse:
+${sd("ejendom")}
+
+Kontaktoplysninger (uændrede):
+Telefon: ${sd("saelgerTlf")}
+E-mail: ${sd("saelgerEmail")}
+
+Jeg beder jer opdatere mine stamdata, så al fremtidig post og kommunikation sendes til den nye adresse.
+
+Venlig hilsen
+${sd("saelger")}
+CPR: ${sd("saelgerCPR")}`,
+      },
+      {
+        id: "husforsikring-opsigelse",
+        name: "Opsigelse af husforsikring",
+        desc: "Opsig husforsikringen pr. overtagelsesdato og bed om refusion",
+        uses: ["saelger","ejendom","overtagelse","forsikring","refusionskonto","saelgerTlf","saelgerEmail"],
+        build: () => `Emne: Opsigelse af husforsikring — ${sd("ejendom")}
+
+Kære ${sd("forsikring")},
+
+Jeg har solgt min ejendom beliggende ${sd("ejendom")}. Overtagelsesdato er ${sd("overtagelse")}, og jeg opsiger hermed husforsikringen med virkning fra denne dato.
+
+Jeg beder om:
+1. Bekræftelse på opsigelsen.
+2. Oversigt over eventuel refusion af forudbetalt præmie.
+3. At eventuel refusion udbetales til konto: ${sd("refusionskonto")}.
+
+Venlig hilsen
+${sd("saelger")}
+Telefon: ${sd("saelgerTlf")}
+E-mail: ${sd("saelgerEmail")}`,
+      },
+      {
+        id: "bank-besked",
+        name: "Meddelelse til bank",
+        desc: "Orientér banken om salg og adresseændring",
+        uses: ["saelger","ejendom","overtagelse","nyAdresse","bank","saelgerTlf"],
+        build: () => `Emne: Salg af bolig og adresseændring — ${sd("saelger")}
+
+Kære bankrådgiver hos ${sd("bank")},
+
+Jeg har solgt min ejendom på ${sd("ejendom")} med overtagelse ${sd("overtagelse")}. I den forbindelse ønsker jeg:
+
+1. At min adresse opdateres til ${sd("nyAdresse")} pr. ${sd("overtagelse")}.
+2. Bekræftelse på at boliglån tilknyttet ejendommen er indfriet korrekt.
+3. Information om eventuelle gebyrer i forbindelse med indfrielsen.
+4. Bekræftelse på at salgsprovenuet er registreret korrekt på min konto.
+
+Ring gerne hvis der er spørgsmål.
+
+Venlig hilsen
+${sd("saelger")}
+Telefon: ${sd("saelgerTlf")}`,
+      },
+      {
+        id: "grundejerforening",
+        name: "Udmeldelse af grundejerforening",
+        desc: "Stop kontingent-opkrævning pr. overtagelsesdato",
+        uses: ["saelger","ejendom","overtagelse","koeber","refusionskonto"],
+        build: () => `Emne: Udmeldelse af grundejerforening — ${sd("ejendom")}
+
+Kære bestyrelse,
+
+Jeg har solgt min ejendom ${sd("ejendom")} med overtagelse ${sd("overtagelse")}. Jeg udmelder mig hermed af foreningen pr. denne dato.
+
+Ny ejer af ejendommen er:
+${sd("koeber")}
+${sd("ejendom")}
+
+Jeg beder om:
+1. Bekræftelse på udmeldelse pr. ${sd("overtagelse")}.
+2. Slutopgørelse over eventuelt forudbetalt kontingent.
+3. At eventuel refusion udbetales til: ${sd("refusionskonto")}.
+
+Venlig hilsen
+${sd("saelger")}`,
+      },
+    ],
+    guide: [
+      { title: "Folkeregister-frist", body: "Flytning skal meldes senest **5 dage efter** du er flyttet. Det gøres digitalt på borger.dk med MitID." },
+      { title: "Eftersendelse af post", body: "Oprettes på postnord.dk — koster typisk et mindre gebyr og kan sættes til 6 eller 12 måneder. Det erstatter ikke adresseændring de enkelte steder." },
+      { title: "Kørekort", body: "Adresseændring skal ske inden 14 dage. Det foregår på borger.dk. Nyt fysisk kort kun hvis du ønsker det." },
+      { title: "Digital Post", body: "Offentlige afsendere opdateres automatisk via CPR, men private (bank, forsikring) skal verificeres individuelt." },
+      { title: "Find alle abonnementer", body: "Gennemgå seneste 3 måneders kontoudtog for faste betalinger — det er din komplette liste." },
+      { title: "Grundejerforening", body: "Mange glemmer at melde sig ud og bliver ved at blive opkrævet. Skriv aktiv udmeldelse pr. overtagelsesdato." },
+    ],
+    resources: [
+      { label: "borger.dk", url: "https://www.borger.dk", desc: "Adresseændring, sundhedskort, kørekort, attester" },
+      { label: "postnord.dk", url: "https://www.postnord.dk/modtag-post/flytning-og-eftersendelse", desc: "Opret eftersendelse af post" },
+      { label: "skat.dk", url: "https://www.skat.dk", desc: "Forskudsopgørelse og adresse" },
+      { label: "e-Boks", url: "https://www.e-boks.com", desc: "Digital Post fra private afsendere" },
+      { label: "mit.dk", url: "https://mit.dk", desc: "Digital Post (alternativ til e-Boks)" },
+    ],
+  },
+  {
+    id: "forsyninger",
+    name: "Forsyninger & aflæsninger",
+    icon: "⚡",
+    sub: "Slutaflæs målere, opsig abonnementer og dokumentér leverancerne på overtagelsesdagen.",
+    tasks: [
+      { t: "El: slutaflæsning og opsigelse", m: "tag foto af måler", d: "Overtagelsesdag" },
+      { t: "El (netselskab): slutaflæsning", m: "", d: "Overtagelsesdag" },
+      { t: "Vand: slutaflæsning og opsigelse", m: "tag foto af måler", d: "Overtagelsesdag" },
+      { t: "Varme (fjernvarme): slutaflæsning", m: "tag foto af måler", d: "Overtagelsesdag" },
+      { t: "Gas: slutaflæsning og opsigelse", m: "", d: "Overtagelsesdag" },
+      { t: "Oliefyr: opmåling af restolie", m: "", d: "Overtagelsesdag" },
+      { t: "Internet/bredbånd: opsigelse el. flytning", m: "", d: "Iht. opsigelsesvarsel" },
+      { t: "TV-pakke / streaming-tv", m: "", d: "Iht. opsigelsesvarsel" },
+      { t: "Fastnettelefoni", m: "", d: "Iht. opsigelsesvarsel" },
+      { t: "Renovation: afmelding", m: "kommunen", d: "Overtagelsesdag" },
+      { t: "Tømning af septiktank", m: "", d: "Før overtagelse" },
+      { t: "Skorstensfejer / brandsyn", m: "", d: "Før overtagelse" },
+      { t: "Alarm / tyverisikring", m: "", d: "Overtagelsesdag" },
+      { t: "Solcelleanlæg: nettoafregningsoverførsel", m: "Energistyrelsen/leverandør", d: "Før overtagelse" },
+      { t: "Varmepumpe: servicekontrakt", m: "opsig eller overdrag", d: "Overtagelsesdag" },
+      { t: "Havemand / snerydning", m: "", d: "Overtagelsesdag" },
+      { t: "Pool-/spa-service", m: "", d: "Overtagelsesdag" },
+      { t: "Vandværk (privat): udmeldelse", m: "", d: "Overtagelsesdag" },
+      { t: "Antenneforening: udmeldelse", m: "", d: "Overtagelsesdag" },
+      { t: "Ejendomsservice (vicevært mv.)", m: "", d: "Overtagelsesdag" },
+    ],
+    templates: [
+      {
+        id: "malerskema",
+        name: "Målerskema (underskrives af begge)",
+        desc: "Fælles aflæsningsdokument til overtagelsesdagen — bør underskrives af sælger og køber",
+        uses: ["ejendom","overtagelse","saelger","koeber"],
+        build: () => `MÅLERSKEMA — OVERTAGELSE AF EJENDOM
+
+Ejendom: ${sd("ejendom")}
+Overtagelsesdato: ${sd("overtagelse")}
+Aflæsningstidspunkt: ${sd("overtagelse")} kl. _______
+
+--- EL ---
+Leverandør (energi): ________________________  Kundenr.: ________________
+Netselskab: _______________________________  Målernr.: ________________
+Målerstand slut (kWh): ____________________
+Foto af måler taget: ☐ Ja
+
+--- VAND ---
+Vandværk: _________________________________  Kundenr.: ________________
+Målernr.: _______________________________
+Målerstand slut (m³): ____________________
+Foto af måler taget: ☐ Ja
+
+--- VARME (fjernvarme) ---
+Leverandør: ______________________________   Kundenr.: ________________
+Målernr.: _______________________________
+Målerstand slut: _________________________
+Foto af måler taget: ☐ Ja
+
+--- GAS (hvis relevant) ---
+Leverandør: ______________________________   Kundenr.: ________________
+Målerstand slut (m³): ____________________
+
+--- OLIE (hvis relevant) ---
+Opmålt restmængde (liter): ________________
+Aftale om overtagelse:  ☐ Ja  ☐ Nej
+Pris for restmængde: ____________________
+
+UNDERSKRIFTER
+
+Sælger (${sd("saelger")}):
+
+_______________________________   Dato: _____________
+
+
+Køber (${sd("koeber")}):
+
+_______________________________   Dato: _____________
+
+(Fotos af alle målere er taget og arkiveret separat.)`,
+      },
+      {
+        id: "el-slutaflaesning",
+        name: "Slutaflæsning til el-leverandør",
+        desc: "Afslut kundeforhold og bed om slutafregning + refusion",
+        uses: ["saelger","ejendom","overtagelse","nyAdresse","refusionskonto","saelgerTlf","saelgerEmail"],
+        build: () => `Emne: Slutaflæsning og opsigelse — ${sd("saelger")}
+
+Kære leverandør,
+
+Jeg har solgt min ejendom på ${sd("ejendom")} med overtagelse ${sd("overtagelse")}. Jeg beder jer registrere følgende slutaflæsning og afslutte mit kundeforhold pr. samme dato.
+
+Ejendom: ${sd("ejendom")}
+Målernr.: _______________________________
+Målerstand kl. ________ den ${sd("overtagelse")}: __________ kWh
+
+(Foto af måleren kan eftersendes på anmodning.)
+
+Kontaktoplysninger efter flytning:
+Ny adresse: ${sd("nyAdresse")}
+Telefon: ${sd("saelgerTlf")}
+E-mail: ${sd("saelgerEmail")}
+
+Jeg beder om:
+1. Bekræftelse på slutaflæsning og ophør af aftale pr. ${sd("overtagelse")}.
+2. Slutafregning sendt på e-mail eller til ny adresse.
+3. Eventuel refusion af forudbetalt beløb til konto: ${sd("refusionskonto")}.
+
+Venlig hilsen
+${sd("saelger")}`,
+      },
+      {
+        id: "internet-flytning",
+        name: "Flytning af internet/bredbånd",
+        desc: "Flyt eller opsig bredbåndsabonnement",
+        uses: ["saelger","ejendom","nyAdresse","overtagelse","saelgerTlf"],
+        build: () => `Emne: Flytning af bredbåndsabonnement — ${sd("saelger")}
+
+Kære leverandør,
+
+Jeg flytter fra ${sd("ejendom")} til ${sd("nyAdresse")} pr. ${sd("overtagelse")} og ønsker at mit abonnement flyttes med, hvis det er muligt.
+
+Jeg beder om:
+1. Bekræftelse på at abonnementet kan flyttes (inkl. evt. bindingsperiode).
+2. Dato for opsætning på ny adresse.
+3. Oplysninger om eventuelle gebyrer eller ændringer i abonnementet.
+
+Hvis abonnementet ikke kan flyttes til ny adresse, beder jeg om opsigelse pr. ${sd("overtagelse")} — bemærk venligst opsigelsesvarsel.
+
+Venlig hilsen
+${sd("saelger")}
+Telefon: ${sd("saelgerTlf")}`,
+      },
+      {
+        id: "solcelle-overdragelse",
+        name: "Solcelle-overdragelse",
+        desc: "Anmod om overførsel af nettoafregningsaftale til ny ejer",
+        uses: ["saelger","ejendom","overtagelse","koeber"],
+        build: () => `Emne: Overdragelse af nettoafregningsaftale — solcelleanlæg på ${sd("ejendom")}
+
+Kære energiselskab,
+
+Jeg har solgt ejendommen ${sd("ejendom")} med overtagelse ${sd("overtagelse")}. Ejendommen er tilsluttet et solcelleanlæg under nettoafregningsordningen.
+
+Installationsnr.: _______________________________
+GSRN / målepunkts-ID: _______________________
+
+Jeg beder om vejledning til:
+1. Hvordan aftalen om nettoafregning overføres til ny ejer.
+2. Hvilke dokumenter I har brug for fra begge parter.
+3. Tidsfrister, så ordningen ikke afbrydes utilsigtet.
+
+Ny ejer:
+${sd("koeber")}
+${sd("ejendom")}
+
+Venlig hilsen
+${sd("saelger")}`,
+      },
+      {
+        id: "renovation-afmelding",
+        name: "Afmelding af renovation",
+        desc: "Kort mail til kommunen om at stoppe dagrenovation i dit navn",
+        uses: ["saelger","ejendom","overtagelse","koeber"],
+        build: () => `Emne: Afmelding af renovation — ${sd("ejendom")}
+
+Kære kommune,
+
+Jeg har solgt ejendommen ${sd("ejendom")} med overtagelse ${sd("overtagelse")}. Jeg beder jer afmelde mig som opkrævet for renovation/dagrenovation pr. denne dato.
+
+Ny ejer af ejendommen er:
+${sd("koeber")}
+
+Jeg beder om bekræftelse på afmeldingen samt slutopgørelse/refusion, hvis relevant.
+
+Venlig hilsen
+${sd("saelger")}`,
+      },
+    ],
+    guide: [
+      { title: "Målere på overtagelsesdagen", body: "Fotografér alle målere. Det er din bedste dokumentation ved tvister om slutafregning." },
+      { title: "Underskriv målerskema sammen", body: "Få køber til at underskrive et fælles målerskema — det eliminerer diskussion senere." },
+      { title: "Opsigelsesvarsel på internet/TV", body: "Kan være op til 3 måneder. Gå i gang før overtagelsen." },
+      { title: "Solcelle-nettoafregning", body: "Aftalen er personlig og bundet til anlægget; overførsel kræver aktiv handling fra både sælger, køber og energiselskab — start i god tid." },
+      { title: "Olietankattest", body: "Hvis huset har/havde olietank, skal attesten udleveres til køber. Fjernet tank kræver attest fra sløjfning." },
+      { title: "Skorstensfejerattest", body: "Hvis der er brændeovn/pejs, skal seneste attest udleveres til køber som dokumentation." },
+    ],
+    resources: [
+      { label: "Energinet — tjek din energi", url: "https://energinet.dk", desc: "Find din el-leverandør og netselskab" },
+      { label: "Skorstensfejerlauget", url: "https://www.skorstensfejer.dk", desc: "Find lokal skorstensfejer" },
+      { label: "Bekendtgørelse om olietanke", url: "https://www.retsinformation.dk", desc: "Regler om olietanke og attester" },
+      { label: "Din kommune", url: "https://www.borger.dk/bolig-flytning/kommune", desc: "Afmeld renovation, tank-sløjfning mv." },
+    ],
+  },
+  {
+    id: "skat",
+    name: "Skat & økonomi",
+    icon: "💰",
+    sub: "Refusion, ejendomsværdiskat, tinglysning, lånindfrielse og eventuel fortjeneste.",
+    tasks: [
+      { t: "Refusionsopgørelse modtaget fra mægler/advokat", m: "", d: "Efter overtagelse" },
+      { t: "Refusionsopgørelse kontrolleret og godkendt", m: "", d: "Inden for frist" },
+      { t: "Restkøbesum modtaget på konto", m: "bank", d: "Pr. overtagelsesdato" },
+      { t: "Indfrielse af realkreditlån bekræftet", m: "", d: "Pr. overtagelsesdato" },
+      { t: "Indfrielse af banklån bekræftet", m: "", d: "Pr. overtagelsesdato" },
+      { t: "Ejendomsværdiskat: opdater forskudsopgørelse", m: "skat.dk", d: "Straks efter salg" },
+      { t: "Grundskyld: kontroller refusion", m: "kommunen", d: "Ved refusion" },
+      { t: "Fortjeneste/tab: vurdér parcelhusreglen", m: "evt. revisor", d: "Før selvangivelse" },
+      { t: "Dokumentér forbedringsudgifter", m: "", d: "Før selvangivelse" },
+      { t: "Indberet evt. fortjeneste på årsopgørelse", m: "skat.dk", d: "Ved årsopgørelse" },
+      { t: "Afslut fælles husholdningskonto", m: "", d: "Efter sidste regning" },
+      { t: "Tinglysning: kontroller at skøde er tinglyst", m: "tinglysning.dk", d: "Inden for 6-8 uger" },
+      { t: "Tinglysningsafgift: kontroller betaling", m: "", d: "Ved tinglysning" },
+      { t: "Slutafregning ejerskifteforsikring", m: "", d: "Efter overtagelse" },
+      { t: "Boligadvokatens slutregning betalt", m: "", d: "Efter afslutning" },
+      { t: "Ejendomsmæglerens salær afregnet", m: "", d: "Ved overtagelse" },
+      { t: "Hjemmekontor-fradrag (hvis relevant)", m: "evt. revisor", d: "Før selvangivelse" },
+      { t: "Afstemning af skæringsdato vs. faktiske beløb", m: "", d: "Efter overtagelse" },
+    ],
+    templates: [
+      {
+        id: "indfrielse-realkredit",
+        name: "Indfrielsesopgørelse (realkredit)",
+        desc: "Anmod realkreditinstitut om en opgørelse over indfrielsesbeløb",
+        uses: ["saelger","ejendom","overtagelse","realkredit","saelgerCPR","saelgerTlf"],
+        build: () => `Emne: Anmodning om indfrielsesopgørelse — ${sd("ejendom")}
+
+Kære ${sd("realkredit")},
+
+Jeg har solgt min ejendom på ${sd("ejendom")} med overtagelse pr. ${sd("overtagelse")}. Jeg beder jer udarbejde og fremsende en indfrielsesopgørelse pr. denne dato.
+
+Lånoplysninger:
+Lånenr.: _______________________________
+
+Opgørelsen bedes omfatte:
+1. Restgæld pr. indfrielsesdato
+2. Opsagt til indfrielse (straks eller med varsel)
+3. Eventuelle differencerente- eller morarentegebyrer
+4. Evt. negativ eller positiv kursdifference
+5. Gebyrer i forbindelse med indfrielsen
+6. Samlet indfrielsesbeløb
+
+Provenuet overføres fra handlens depot af min advokat/mægler.
+
+Venlig hilsen
+${sd("saelger")}
+CPR: ${sd("saelgerCPR")}
+Telefon: ${sd("saelgerTlf")}`,
+      },
+      {
+        id: "refusion-spoergsmal",
+        name: "Spørgsmål til refusionsopgørelse",
+        desc: "Bed mægler/advokat om at verificere eller rette poster i opgørelsen",
+        uses: ["saelger","ejendom","maegler","advokat","refusionskonto"],
+        build: () => `Emne: Spørgsmål til refusionsopgørelse — ${sd("ejendom")}
+
+Kære ${sd("maegler")} / ${sd("advokat")},
+
+Tak for refusionsopgørelsen. Jeg har enkelte spørgsmål, før jeg godkender den:
+
+1. _______________________________
+   (fx: Grundskyld — beløbet er beregnet ud fra ______ kr./år. Kommunen har opkrævet mig ______ kr. i år; kan I verificere det anvendte beløb?)
+
+2. _______________________________
+   (fx: Husforsikringen er opsagt pr. overtagelsesdato. Jeg afventer slutafregning fra selskabet; bør denne post fjernes fra opgørelsen?)
+
+3. _______________________________
+   (fx: Antenne-/grundejerforeningskontingentet er halvårligt forudbetalt. Er denne post medtaget?)
+
+Når disse punkter er afklaret, godkender jeg opgørelsen og anmoder om overførsel af nettobeløbet til konto: ${sd("refusionskonto")}.
+
+Venlig hilsen
+${sd("saelger")}`,
+      },
+      {
+        id: "revisor-parcelhus",
+        name: "Spørgsmål til revisor (parcelhusreglen)",
+        desc: "Afklar skattemæssig status af salget",
+        uses: ["saelger","ejendom","overtagelse","saelgerCPR"],
+        build: () => `Emne: Vurdering af skattepligt ved boligsalg — ${sd("ejendom")}
+
+Kære revisor,
+
+Jeg har solgt min bolig og har brug for en kort vurdering af, om fortjenesten er omfattet af parcelhusreglen, eller om der er skattepligt.
+
+Oplysninger om handlen:
+- Ejendom: ${sd("ejendom")}
+- Grundstørrelse: __________ m²
+- Type: ☐ villa  ☐ rækkehus  ☐ sommerhus  ☐ udlejningsejendom
+- Ejet siden: _______________________
+- Beboet af mig/husstand i perioden: _______________________
+- Evt. udlejning eller erhvervsmæssig anvendelse: ☐ Ja ☐ Nej (hvis ja, beskriv nedenfor)
+- Anskaffelsessum: __________ kr.
+- Forbedringsudgifter dokumenteret: __________ kr.
+- Salgssum: __________ kr.
+- Salgsomkostninger: __________ kr.
+- Overtagelsesdato: ${sd("overtagelse")}
+
+Jeg beder om:
+1. Vurdering af om handlen er skattefri (parcelhusreglen).
+2. Hvis skattepligtig: estimat af fortjeneste og hvordan den skal indberettes.
+3. Hvilke bilag I har brug for fra mig.
+
+Venlig hilsen
+${sd("saelger")}
+CPR: ${sd("saelgerCPR")}`,
+      },
+      {
+        id: "forskudsopgoerelse-guide",
+        name: "Guide: opdater forskudsopgørelse",
+        desc: "Trin-for-trin vejledning (ikke et brev — en huskeseddel)",
+        uses: ["overtagelse","ejendom"],
+        build: () => `HUSKESEDDEL: OPDATÉR FORSKUDSOPGØRELSE EFTER SALG
+
+Efter salget af ${sd("ejendom")} (overtagelse ${sd("overtagelse")}) skal din forskudsopgørelse opdateres — ellers får du en efterregning på ejendomsværdiskat i næste årsopgørelse.
+
+1. Log på skat.dk med MitID
+2. Gå til: Forskudsopgørelse → Ret forskudsopgørelsen
+3. Opdatér følgende rubrikker:
+
+   Rubrik 220 (Ejendomsværdiskat)
+   - Reducér proportionalt med antal dage du har ejet boligen i året.
+   - Formel: årligt beløb × (dage ejet / 365)
+
+   Rubrik 41 / 44 (Renteudgifter)
+   - Reducér hvis realkredit-/banklån er indfriet.
+   - Kontakt din bank/institut for faktisk renteforbrug til overtagelsesdato.
+
+   Rubrik 501 (Ejendomsværdi)
+   - Fjern helt, hvis du ingen bolig ejer længere.
+
+4. Opdatér din pendler-/befordringsfradragsadresse hvis du er flyttet.
+5. Kontrollér at trækprocent og månedlig skat ser rimelig ud.
+6. Gem og download kvittering.
+
+Husk: Hvis du har haft hjemmekontor med fradrag — få vurderet om det påvirker parcelhusreglens dækning af salgsfortjenesten.`,
+      },
+    ],
+    guide: [
+      { title: "Parcelhusreglen (kort)", body: "Fortjeneste er som hovedregel skattefri hvis du selv har boet i boligen, og matriklen er under 1.400 m² eller ikke lovligt kan udstykkes." },
+      { title: "Ejendomsværdiskat", body: "Skal opdateres på skat.dk straks efter salg — ellers kommer der en efterregning." },
+      { title: "Tinglysning", body: "Skødet skal tinglyses for endelig juridisk dokumentation. Tinglysningsafgift (2026-takst): 1.850 kr. + 0,6 % af købesummen. Kontrollér på tinglysning.dk efter 6-8 uger." },
+      { title: "Differencerente", body: "Ved realkreditindfrielse kan der være en differencerente afhængigt af rentesats og timing. Spørg instituttet på forhånd." },
+      { title: "Forbedringsudgifter", body: "Ombygninger, nyt tag, energirenovering kan tillægges anskaffelsessummen og reducerer en evt. skattepligtig fortjeneste. Gem fakturaer." },
+      { title: "Hjemmekontor / udlejning", body: "Delvis erhvervsmæssig brug kan gøre dele af salget skattepligtigt — få det vurderet." },
+    ],
+    resources: [
+      { label: "skat.dk", url: "https://www.skat.dk", desc: "Forskudsopgørelse, årsopgørelse, ejendomsværdiskat" },
+      { label: "tinglysning.dk", url: "https://www.tinglysning.dk", desc: "Tingbogsattest og skøde — gratis med MitID" },
+      { label: "Parcelhusreglen (skat.dk)", url: "https://skat.dk/borger/bolig/salg-af-bolig", desc: "SKATs vejledning om skattefrihed" },
+      { label: "Vurderingsstyrelsen", url: "https://www.vurderingsportalen.dk", desc: "Offentlige ejendomsvurderinger og grundskyld" },
+    ],
+  },
+  {
+    id: "dokumenter",
+    name: "Dokumentarkiv & garantier",
+    icon: "📁",
+    sub: "Arkivér alle salgsrelevante dokumenter — de er dit sikkerhedsnet i 10-årsperioden.",
+    tasks: [
+      { t: "Købsaftale (underskrevet)", m: "min. 10 år", d: "Permanent" },
+      { t: "Tingbogsattest (efter tinglysning)", m: "", d: "Permanent" },
+      { t: "Skøde (tinglyst kopi)", m: "", d: "Permanent" },
+      { t: "Slutopgørelse / refusionsopgørelse", m: "min. 10 år", d: "Permanent" },
+      { t: "Tilstandsrapport", m: "10-årsansvar", d: "Permanent" },
+      { t: "Elinstallationsrapport", m: "10-årsansvar", d: "Permanent" },
+      { t: "Energimærkning", m: "", d: "Permanent" },
+      { t: "Ejerskifteforsikring (police + betingelser)", m: "", d: "Forsikringens løbetid" },
+      { t: "BBR-meddelelse (senest gældende)", m: "bbr.dk", d: "Permanent" },
+      { t: "Lokalplan / tillæg", m: "kommunens plan", d: "Permanent" },
+      { t: "Servitutter (oversigt)", m: "tinglysning.dk", d: "Permanent" },
+      { t: "Byggetilladelser (nuværende og tidligere)", m: "", d: "Permanent" },
+      { t: "Færdigmeldinger / ibrugtagningstilladelser", m: "", d: "Permanent" },
+      { t: "Håndværker-fakturaer og garantier", m: "typisk 5-årsgaranti", d: "Garantiens løbetid" },
+      { t: "Tagrenovering: dokumentation og garanti", m: "", d: "Garantiens løbetid" },
+      { t: "Vinduer/døre: dokumentation og garanti", m: "", d: "Garantiens løbetid" },
+      { t: "Varmepumpe / kedel: kvittering og garanti", m: "", d: "Garantiens løbetid" },
+      { t: "Solcelleanlæg: dokumentation", m: "", d: "Permanent" },
+      { t: "Kloakarbejde: TV-inspektionsrapport", m: "", d: "Permanent" },
+      { t: "Skorstensfejerattest (seneste)", m: "", d: "Indtil ny udstedes" },
+      { t: "Olietankattest", m: "", d: "Permanent" },
+      { t: "Kopi af slutaflæsninger (el, vand, varme)", m: "", d: "Min. 3 år" },
+      { t: "Korrespondance med køber (e-mails, SMS)", m: "", d: "Min. 10 år" },
+      { t: "Mangellog / reklamationer fra køber", m: "", d: "Min. 10 år" },
+      { t: "Billeder af ejendommens stand ved overdragelse", m: "", d: "Min. 10 år" },
+      { t: "Målerskema (underskrevet af begge parter)", m: "", d: "Min. 10 år" },
+      { t: "Dispensationer / tilladelser fra kommunen", m: "", d: "Permanent" },
+    ],
+    templates: [
+      {
+        id: "reklamation-modtagelse",
+        name: "Bekræftelse af reklamation (hold svaret åbent)",
+        desc: "Første svar når køber reklamerer — køb dig tid til at gennemgå",
+        uses: ["saelger","ejendom","saelgerTlf","saelgerEmail"],
+        build: () => `Emne: Bekræftelse på modtagelse af reklamation — ${sd("ejendom")}
+
+Kære køber,
+
+Tak for din henvendelse vedrørende ejendommen ${sd("ejendom")}.
+
+Jeg bekræfter at have modtaget din reklamation. Jeg vil gennemgå sagen og den foreliggende dokumentation — herunder tilstandsrapport, elinstallationsrapport og eventuelle oplysninger i købsaftalen — og vender tilbage med et substantielt svar inden for 2-3 uger.
+
+I mellemtiden vil jeg bede dig om:
+1. Billeder af forholdet, hvis de findes.
+2. Eventuelle vurderinger eller tilbud på udbedring, hvis du har indhentet dem.
+3. Oplysning om hvornår du første gang opdagede forholdet.
+
+Venlig hilsen
+${sd("saelger")}
+Telefon: ${sd("saelgerTlf")}
+E-mail: ${sd("saelgerEmail")}`,
+      },
+      {
+        id: "reklamation-svar",
+        name: "Svar på reklamation (oplyst i rapporter)",
+        desc: "Når forholdet er beskrevet i tilstandsrapport eller elinstallationsrapport",
+        uses: ["saelger","ejendom","ejerskifte"],
+        build: () => `Emne: Svar på reklamation — ${sd("ejendom")}
+
+Kære køber,
+
+Tak for din reklamation og de supplerende oplysninger.
+
+Jeg har gennemgået sagen og vil henvise til:
+
+1. Tilstandsrapporten af _______________________, pkt. _______, hvori forholdet (eller det beslægtede forhold) er beskrevet med karakteren _______. Forholdet var således oplyst forud for handlen.
+
+2. Købsaftalens pkt. _______ om sælgers ansvarsbegrænsning, som gælder når tilstandsrapport, elinstallationsrapport og tilbud om ejerskifteforsikring er udleveret forud for handlen — hvilket var tilfældet.
+
+3. Ejerskifteforsikringen tegnet hos ${sd("ejerskifte")}. Jeg vil anbefale, at du retter henvendelse til forsikringen med henblik på eventuel udbedring, da forholdet efter min vurdering falder inden for forsikringens dækning.
+
+Jeg står naturligvis til rådighed, hvis der er dokumentation I har brug for, eller hvis der opstår spørgsmål undervejs i forsikringssagen.
+
+Venlig hilsen
+${sd("saelger")}`,
+      },
+      {
+        id: "arkiv-oversigt",
+        name: "Dokumentarkiv-oversigt (forside til mappen)",
+        desc: "Forside til den fysiske eller digitale salgs-mappe",
+        uses: ["saelger","ejendom","koeber","overtagelse","bbr","matrikel","advokat","maegler","ejerskifte"],
+        build: () => `SALGSMAPPE — ${sd("ejendom")}
+
+═══════════════════════════════════════════════════════════════
+
+EJENDOMSOPLYSNINGER
+  Adresse:           ${sd("ejendom")}
+  BBR-nr.:           ${sd("bbr")}
+  Matrikelnr.:       ${sd("matrikel")}
+
+HANDLENS PARTER
+  Sælger:            ${sd("saelger")}
+  Køber:             ${sd("koeber")}
+  Overtagelsesdato:  ${sd("overtagelse")}
+  Mægler:            ${sd("maegler")}
+  Advokat:           ${sd("advokat")}
+  Ejerskifteforsikr: ${sd("ejerskifte")}
+
+═══════════════════════════════════════════════════════════════
+
+INDHOLD AF MAPPEN
+
+  01 Handlen
+     □ Købsaftale (underskrevet)
+     □ Skøde (tinglyst kopi)
+     □ Tingbogsattest
+     □ Refusionsopgørelse
+     □ Indfrielsesopgørelser (realkredit + bank)
+
+  02 Rapporter og forsikring
+     □ Tilstandsrapport
+     □ Elinstallationsrapport
+     □ Energimærkning
+     □ Ejerskifteforsikring (tilbud, police, betingelser)
+
+  03 Offentlige oplysninger
+     □ BBR-meddelelse
+     □ Lokalplan
+     □ Servitutter
+     □ Byggetilladelser
+     □ Færdigmeldinger
+     □ Dispensationer
+
+  04 Byggeri og garantier
+     □ _______________________________
+     □ _______________________________
+     □ _______________________________
+
+  05 Forsyninger
+     □ Målerskema overtagelse (underskrevet)
+     □ Slutaflæsninger (el, vand, varme)
+     □ Slutafregninger fra leverandører
+     □ Skorstensfejerattest
+     □ Olietankattest (hvis relevant)
+
+  06 Korrespondance
+     □ Med køber
+     □ Med mægler / advokat
+     □ Med bank / realkredit
+
+  07 Billeder og dokumentation
+     □ Stand ved overdragelse (fotos)
+     □ Målerfotos
+
+  08 Skat
+     □ Forskudsopgørelse opdateret (kvittering)
+     □ Forbedringsudgifter (bilag)
+     □ Eventuel revisor-vurdering (parcelhusreglen)
+
+═══════════════════════════════════════════════════════════════
+
+VIGTIGT: Opbevares i minimum 10 år pga. mulighed for reklamation over skjulte mangler.`,
+      },
+    ],
+    guide: [
+      { title: "10-års-reglen", body: "Køber kan reklamere over skjulte mangler i op til 10 år efter overtagelse. Opbevar al dokumentation i mindst denne periode — helst både fysisk og digitalt." },
+      { title: "Ansvarsbegrænsning", body: "Hvis tilstandsrapport + elinstallationsrapport + tilbud om ejerskifteforsikring er udleveret forud for handlen, er sælgers ansvar for skjulte mangler stærkt begrænset." },
+      { title: "Mappestruktur", body: "Brug filnavns-konventionen ÅÅÅÅ-MM-DD Dokumenttype - Beskrivelse.pdf. Det gør kronologi og søgning let." },
+      { title: "Ved reklamation", body: "Svar ikke med det samme. Bekræft modtagelse, gennemgå rapporterne, og vend tilbage med et fagligt svar. Ved tvivl: kontakt boligadvokat." },
+      { title: "Ejerskifteforsikring", body: "Udlever dokumentation ved overdragelse — forsikringen følger ejendommen, ikke personen." },
+      { title: "Sikker opbevaring", body: "Digital: cloud + ekstern backup. Fysisk: brandsikker mappe for originaler der ikke let kan genskabes (skøde, tingbogsattest)." },
+    ],
+    resources: [
+      { label: "tinglysning.dk", url: "https://www.tinglysning.dk", desc: "Tingbogsattest (gratis med MitID)" },
+      { label: "bbr.dk", url: "https://bbr.dk", desc: "BBR-meddelelse om ejendommen" },
+      { label: "plandata.dk", url: "https://www.plandata.dk", desc: "Lokalplaner og kommuneplaner" },
+      { label: "boligejer.dk", url: "https://www.boligejer.dk", desc: "Energimærkning og ejendomsoplysninger" },
+      { label: "weblager.dk", url: "https://www.weblager.dk", desc: "Historiske byggesager (hvis kommunen er med)" },
+      { label: "ois.dk", url: "https://ois.dk", desc: "Offentlige ejendomsoplysninger" },
+    ],
+  }
+];
+
+const STATUSES = [
+  { v: "pending", label: "Ikke startet", cls: "" },
+  { v: "progress", label: "I gang", cls: "s-progress" },
+  { v: "wait", label: "Afventer svar", cls: "s-wait" },
+  { v: "done", label: "Udført", cls: "s-done" },
+  { v: "na", label: "Ikke relevant", cls: "s-na" },
+];
+
+// ============================================================================
+// STATE
+// ============================================================================
+
+const STORAGE_KEY = "efterbehandling-hussalg-v2";
+
+let state = load() || initState();
+let uiState = { activeTabs: {}, activeTemplates: {} };
+
+function initState() {
+  const s = { sagsdata: {}, tasks: {} };
+  for (const a of AREAS) {
+    s.tasks[a.id] = a.tasks.map(t => ({ status: "pending", notes: "" }));
+  }
+  return s;
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      // migrate from v1 if present
+      const v1 = localStorage.getItem("efterbehandling-hussalg-v1");
+      if (v1) {
+        const parsed = JSON.parse(v1);
+        return reconcile(parsed);
+      }
+      return null;
+    }
+    return reconcile(JSON.parse(raw));
+  } catch (e) { return null; }
+}
+
+function reconcile(parsed) {
+  if (!parsed.tasks) parsed.tasks = {};
+  for (const a of AREAS) {
+    if (!parsed.tasks[a.id]) parsed.tasks[a.id] = [];
+    while (parsed.tasks[a.id].length < a.tasks.length) {
+      parsed.tasks[a.id].push({ status: "pending", notes: "" });
+    }
+  }
+  if (!parsed.sagsdata) parsed.sagsdata = {};
+  return parsed;
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+
+function renderSagsdata() {
+  const grid = document.getElementById("sagsdata-grid");
+  grid.innerHTML = "";
+  for (const f of SAGSDATA_FIELDS) {
+    const wrap = document.createElement("div");
+    wrap.className = "field";
+    const label = document.createElement("label");
+    label.textContent = f.label;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = state.sagsdata[f.key] || "";
+    input.addEventListener("input", e => {
+      state.sagsdata[f.key] = e.target.value;
+      save();
+      // re-render any open template so placeholders update live
+      refreshOpenTemplates();
+    });
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    grid.appendChild(wrap);
+  }
+}
+
+function progress(areaId) {
+  const tasks = state.tasks[areaId];
+  const total = tasks.filter(t => t.status !== "na").length;
+  const done = tasks.filter(t => t.status === "done").length;
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  return { total, done, pct };
+}
+
+function totalProgress() {
+  let total = 0, done = 0;
+  for (const a of AREAS) {
+    const p = progress(a.id);
+    total += p.total; done += p.done;
+  }
+  return { total, done, pct: total === 0 ? 0 : Math.round((done/total)*100) };
+}
+
+function renderSummary() {
+  const container = document.getElementById("areas-summary");
+  container.innerHTML = "";
+  for (const a of AREAS) {
+    const p = progress(a.id);
+    const card = document.createElement("div");
+    card.className = "area-card";
+    card.onclick = () => scrollToArea(a.id);
+    card.innerHTML = `
+      <h3>${a.icon} ${a.name}</h3>
+      <div class="count">${p.done} af ${p.total} udført</div>
+      <div class="mini-bar"><div class="mini-bar-fill" style="width:${p.pct}%"></div></div>
+      <div class="area-pct">${p.pct} %</div>
+    `;
+    container.appendChild(card);
+  }
+  const tp = totalProgress();
+  document.getElementById("total-pct").textContent = `${tp.pct} %`;
+  document.getElementById("total-bar").style.width = `${tp.pct}%`;
+}
+
+function renderAreas() {
+  const container = document.getElementById("area-sections");
+  container.innerHTML = "";
+  for (const a of AREAS) {
+    const section = document.createElement("section");
+    section.className = "area-section";
+    section.id = `area-${a.id}`;
+    const activeTab = uiState.activeTabs[a.id] || "tasks";
+    section.innerHTML = `
+      <h2>${a.icon} ${a.name}</h2>
+      <div class="sub">${a.sub}</div>
+      <div class="tabs" role="tablist">
+        <button class="tab ${activeTab==="tasks"?"active":""}" data-tab="tasks" data-area="${a.id}">Opgaver <span class="tab-count">${a.tasks.length}</span></button>
+        <button class="tab ${activeTab==="templates"?"active":""}" data-tab="templates" data-area="${a.id}">Skabeloner <span class="tab-count">${a.templates.length}</span></button>
+        <button class="tab ${activeTab==="guide"?"active":""}" data-tab="guide" data-area="${a.id}">Guide <span class="tab-count">${a.guide.length}</span></button>
+        <button class="tab ${activeTab==="resources"?"active":""}" data-tab="resources" data-area="${a.id}">Ressourcer <span class="tab-count">${a.resources.length}</span></button>
+      </div>
+      <div class="tab-panel ${activeTab==="tasks"?"active":""}" data-panel="tasks"><div class="task-list" id="tasks-${a.id}"></div></div>
+      <div class="tab-panel ${activeTab==="templates"?"active":""}" data-panel="templates" id="templates-${a.id}"></div>
+      <div class="tab-panel ${activeTab==="guide"?"active":""}" data-panel="guide" id="guide-${a.id}"></div>
+      <div class="tab-panel ${activeTab==="resources"?"active":""}" data-panel="resources" id="resources-${a.id}"></div>
+    `;
+    container.appendChild(section);
+
+    // tab behavior
+    section.querySelectorAll(".tab").forEach(btn => {
+      btn.onclick = () => {
+        uiState.activeTabs[a.id] = btn.dataset.tab;
+        section.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t === btn));
+        section.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === btn.dataset.tab));
+      };
+    });
+
+    renderTasks(a, section.querySelector(`#tasks-${a.id}`));
+    renderTemplates(a, section.querySelector(`#templates-${a.id}`));
+    renderGuide(a, section.querySelector(`#guide-${a.id}`));
+    renderResources(a, section.querySelector(`#resources-${a.id}`));
+  }
+}
+
+function renderTasks(area, container) {
+  container.innerHTML = "";
+  area.tasks.forEach((t, i) => {
+    const ts = state.tasks[area.id][i];
+    const row = document.createElement("div");
+    row.className = "task" + (ts.status === "done" ? " done" : "") + (ts.status === "na" ? " na" : "");
+    const options = STATUSES.map(s =>
+      `<option value="${s.v}" ${ts.status === s.v ? "selected" : ""}>${s.label}</option>`
+    ).join("");
+    const statusCls = STATUSES.find(s => s.v === ts.status)?.cls || "";
+    row.innerHTML = `
+      <div class="task-idx">${String(i+1).padStart(2,"0")}</div>
+      <div class="task-main">
+        <div class="task-title">${escapeHTML(t.t)}${t.d ? `<span class="deadline-tag">${escapeHTML(t.d)}</span>` : ""}</div>
+        ${t.m ? `<div class="task-meta">${escapeHTML(t.m)}</div>` : ""}
+        <textarea class="task-notes" placeholder="Noter, datoer, kontaktoplysninger…">${escapeHTML(ts.notes || "")}</textarea>
+      </div>
+      <div><select class="status ${statusCls}">${options}</select></div>
+    `;
+    row.querySelector("select").addEventListener("change", e => {
+      state.tasks[area.id][i].status = e.target.value;
+      save();
+      renderSummary();
+      renderAreas();
+    });
+    row.querySelector("textarea").addEventListener("input", e => {
+      state.tasks[area.id][i].notes = e.target.value;
+      save();
+    });
+    container.appendChild(row);
+  });
+}
+
+function renderTemplates(area, container) {
+  const activeId = uiState.activeTemplates[area.id] || area.templates[0]?.id;
+  container.innerHTML = `
+    <div class="template-layout">
+      <div class="template-list" id="tlist-${area.id}"></div>
+      <div id="tview-${area.id}"></div>
+    </div>
+  `;
+  const list = container.querySelector(`#tlist-${area.id}`);
+  area.templates.forEach(tpl => {
+    const item = document.createElement("div");
+    item.className = "template-item" + (tpl.id === activeId ? " active" : "");
+    item.innerHTML = `<div>${escapeHTML(tpl.name)}</div><div class="ti-desc">${escapeHTML(tpl.desc)}</div>`;
+    item.onclick = () => {
+      uiState.activeTemplates[area.id] = tpl.id;
+      renderTemplates(area, container);
+    };
+    list.appendChild(item);
+  });
+  renderTemplateView(area, activeId, container.querySelector(`#tview-${area.id}`));
+}
+
+function renderTemplateView(area, tplId, container) {
+  const tpl = area.templates.find(t => t.id === tplId) || area.templates[0];
+  if (!tpl) { container.innerHTML = "<em>Ingen skabeloner.</em>"; return; }
+  const body = tpl.build();
+  const missing = (tpl.uses || []).filter(k => !(state.sagsdata[k] || "").trim());
+  const missingHTML = missing.length
+    ? `<div class="missing-warn"><strong>⚠ Mangler i Sagsdata:</strong>${missing.map(k => sdLabel(k)).join(", ")} — felter med [nøglenavn] udfyldes automatisk når sagsdata er komplet.</div>`
+    : "";
+  const highlightedBody = highlightPlaceholders(body);
+  container.innerHTML = `
+    <div class="template-view">
+      <div class="template-toolbar">
+        <div class="name">${escapeHTML(tpl.name)}</div>
+        <div class="actions">
+          <button class="btn-sm" onclick="copyTemplate('${area.id}','${tpl.id}')">📋 Kopiér</button>
+          <button class="btn-sm" onclick="downloadTemplate('${area.id}','${tpl.id}')">↓ .txt</button>
+          <button class="btn-sm" onclick="openMail('${area.id}','${tpl.id}')">✉ Åbn i mail</button>
+          <button class="btn-sm primary" onclick="editableToggle(this)">✎ Redigér inline</button>
+        </div>
+      </div>
+      ${missingHTML}
+      <pre class="template-body" data-area="${area.id}" data-tpl="${tpl.id}">${highlightedBody}</pre>
+      <div class="template-footer">
+        Bruger fra Sagsdata: ${(tpl.uses || []).map(k => `<code>${escapeHTML(sdLabel(k))}</code>`).join(" · ") || "ingen"}
+      </div>
+    </div>
+  `;
+}
+
+function highlightPlaceholders(text) {
+  // Placeholders are [xxxx] from sd() when missing
+  return escapeHTML(text).replace(/\[([a-zA-Z]+)\]/g, (m, key) => {
+    const valid = SAGSDATA_FIELDS.some(f => f.key === key);
+    if (!valid) return m;
+    return `<span class="placeholder-pill placeholder-missing">${sdLabel(key)}</span>`;
+  });
+}
+
+function refreshOpenTemplates() {
+  for (const a of AREAS) {
+    if (uiState.activeTabs[a.id] === "templates") {
+      const container = document.getElementById(`tview-${a.id}`);
+      const activeId = uiState.activeTemplates[a.id] || a.templates[0]?.id;
+      if (container && activeId) renderTemplateView(a, activeId, container);
+    }
+  }
+}
+
+function renderGuide(area, container) {
+  container.innerHTML = `
+    <div class="guide-grid">
+      ${area.guide.map(g => `
+        <div class="guide-card">
+          <h4>${escapeHTML(g.title)}</h4>
+          <p>${formatInline(g.body)}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderResources(area, container) {
+  container.innerHTML = `
+    <div class="resource-list">
+      ${area.resources.map(r => `
+        <a class="resource" href="${escapeHTML(r.url)}" target="_blank" rel="noopener noreferrer">
+          <div class="resource-label">${escapeHTML(r.label)} <span style="font-size:10px;opacity:0.6">↗</span></div>
+          <div class="resource-desc">${escapeHTML(r.desc)}</div>
+          <div class="resource-url">${escapeHTML(r.url)}</div>
+        </a>
+      `).join("")}
+    </div>
+  `;
+}
+
+function scrollToArea(id) {
+  const el = document.getElementById(`area-${id}`);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ============================================================================
+// TEMPLATE ACTIONS
+// ============================================================================
+
+function getTemplateBody(areaId, tplId) {
+  const area = AREAS.find(a => a.id === areaId);
+  const tpl = area.templates.find(t => t.id === tplId);
+  // If user edited inline, read from DOM
+  const el = document.querySelector(`.template-body[data-area="${areaId}"][data-tpl="${tplId}"]`);
+  if (el && el.classList.contains("editable")) return el.innerText;
+  return tpl.build();
+}
+
+function copyTemplate(areaId, tplId) {
+  const body = getTemplateBody(areaId, tplId);
+  navigator.clipboard.writeText(body).then(
+    () => showToast("Skabelon kopieret til udklipsholder"),
+    () => showToast("Kunne ikke kopiere — markér teksten manuelt")
+  );
+}
+
+function downloadTemplate(areaId, tplId) {
+  const area = AREAS.find(a => a.id === areaId);
+  const tpl = area.templates.find(t => t.id === tplId);
+  const body = getTemplateBody(areaId, tplId);
+  const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${tpl.id}_${(state.sagsdata.ejendom || "hussalg").replace(/[^a-zA-Z0-9]+/g,"_")}.txt`;
+  a.click();
+  showToast("Fil hentet");
+}
+
+function openMail(areaId, tplId) {
+  const body = getTemplateBody(areaId, tplId);
+  // Extract subject from first line if present
+  let subject = "";
+  let mailBody = body;
+  const lines = body.split("\n");
+  if (lines[0].startsWith("Emne:")) {
+    subject = lines[0].replace(/^Emne:\s*/,"").trim();
+    mailBody = lines.slice(1).join("\n").replace(/^\n+/, "");
+  }
+  const href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
+  window.location.href = href;
+}
+
+function editableToggle(btn) {
+  const toolbar = btn.closest(".template-toolbar");
+  const body = toolbar.nextElementSibling.classList.contains("missing-warn")
+    ? toolbar.nextElementSibling.nextElementSibling
+    : toolbar.nextElementSibling;
+  const editable = body.classList.toggle("editable");
+  body.contentEditable = editable ? "true" : "false";
+  btn.textContent = editable ? "✓ Færdig" : "✎ Redigér inline";
+  if (editable) body.focus();
+}
+
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+function escapeHTML(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatInline(str) {
+  // Support **bold** in guide text
+  return escapeHTML(str).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+// ============================================================================
+// EXPORT / IMPORT / RESET
+// ============================================================================
+
+function exportJSON() {
+  const data = { exportedAt: new Date().toISOString(), version: 2, ...state };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const ejendom = (state.sagsdata.ejendom || "hussalg").replace(/[^a-zA-Z0-9æøåÆØÅ ]+/g,"").replace(/\s+/g,"_");
+  a.download = `efterbehandling_${ejendom}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast("Data eksporteret");
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (parsed.sagsdata) state.sagsdata = parsed.sagsdata;
+      if (parsed.tasks) {
+        for (const a of AREAS) {
+          if (parsed.tasks[a.id]) {
+            state.tasks[a.id] = parsed.tasks[a.id];
+            while (state.tasks[a.id].length < a.tasks.length) state.tasks[a.id].push({ status: "pending", notes: "" });
+          }
+        }
+      }
+      save();
+      renderAll();
+      showToast("Data importeret");
+    } catch (err) {
+      alert("Kunne ikke læse JSON-filen: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAll() {
+  if (!confirm("Er du sikker på at du vil nulstille alle data? Dette kan ikke fortrydes.")) return;
+  state = initState();
+  save();
+  renderAll();
+  showToast("Alt nulstillet");
+}
+
+function printDashboard() {
+  // Expand all tabs so everything prints
+  for (const a of AREAS) uiState.activeTabs[a.id] = "tasks";
+  renderAreas();
+  setTimeout(() => window.print(), 100);
+}
+
+function renderAll() {
+  renderSagsdata();
+  renderSummary();
+  renderAreas();
+}
+
+renderAll();
+</script>
+</body>
+</html>
