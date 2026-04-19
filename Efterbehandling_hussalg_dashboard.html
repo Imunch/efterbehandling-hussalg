@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="da" class="auth-gate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efterbehandling efter hussalg</title>
+<style>
+  :root{--bg:#f8f9fb;--surface:#fff;--surface-2:#f3f4f6;--border:#e5e7eb;--border-light:#f0f0f0;--text:#111827;--muted:#6b7280;--primary:#2563eb;--primary-soft:#eff6ff;--primary-border:#bfdbfe;--green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--radius:12px;--shadow-sm:0 1px 2px rgba(0,0,0,.04);--shadow:0 1px 3px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)}
+  .topbar-brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+  .topbar-brand h1{font-size:16px;font-weight:700;white-space:nowrap}
+  .topbar-brand .q4{font-size:11px;color:var(--muted);white-space:nowrap}
+  .topbar-progress{flex:1;display:flex;align-items:center;gap:10px;justify-content:flex-end;min-width:0}
+  .topbar-bar{width:120px;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;flex-shrink:0}
+  .topbar-bar-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease}
+  .topbar-pct{font-size:13px;font-weight:600;color:var(--green);min-width:38px;text-align:right}
+  .topbar-actions{display:flex;gap:4px;flex-shrink:0}
+  .icon-btn{background:none;border:1px solid transparent;border-radius:8px;padding:7px 8px;cursor:pointer;font-size:15px;color:var(--muted);transition:all .15s;font-family:inherit;line-height:1}
+  .icon-btn:hover{background:var(--surface-2);color:var(--text)}
+  .icon-btn:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+  .icon-btn.danger{color:var(--red)}.icon-btn.danger:hover{background:#fef2f2}
+  .container{max-width:960px;margin:0 auto;padding:24px 20px 80px}
+  .info-banner{background:var(--amber-bg);border:1px solid #fde68a;border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;font-size:13px;color:#92400e;display:none}
+  .info-banner.show{display:block}.info-banner a{color:#92400e;font-weight:600}
+  .info-banner .close-banner{float:right;background:none;border:none;color:#92400e;cursor:pointer;font-size:16px;padding:0 0 0 12px;line-height:1}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+  .panel-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);transition:background .1s}
+  .panel-toggle:hover{background:var(--surface-2)}.panel-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+  .panel-toggle .arrow{transition:transform .2s;font-size:12px;color:var(--muted)}
+  .panel.open .panel-toggle .arrow{transform:rotate(180deg)}
+  .panel-body{display:none;padding:0 18px 18px}.panel.open .panel-body{display:block}
+  .panel-hint{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+  .form-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
+  .form-field input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--surface);transition:border-color .15s}
+  .form-field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .form-group-title{font-size:12px;font-weight:700;color:var(--primary);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border-light)}
+  .form-group-title:first-child{margin-top:0}
+  .sagsdata-filled{font-size:12px;color:var(--muted);margin-left:auto;font-weight:400}
+  .overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+  .overview-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .15s;text-align:left}
+  .overview-card:hover{border-color:var(--primary);box-shadow:var(--shadow);transform:translateY(-1px)}
+  .overview-card:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+  .overview-card .oc-icon{font-size:22px;margin-bottom:6px}
+  .overview-card .oc-name{font-size:14px;font-weight:600;margin-bottom:8px;line-height:1.3}
+  .overview-card .oc-bar{height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-bottom:6px}
+  .overview-card .oc-bar-fill{height:100%;background:var(--green);transition:width .3s;border-radius:3px}
+  .overview-card .oc-stat{font-size:12px;color:var(--muted)}.overview-card .oc-stat strong{color:var(--green)}
+  .area{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+  .area-header{padding:18px 20px 0}
+  .area-title{font-size:17px;font-weight:700;margin-bottom:2px}
+  .area-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 20px}
+  .tab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;font-family:inherit;transition:color .1s}
+  .tab:hover{color:var(--text)}.tab:focus-visible{outline:2px solid var(--primary);outline-offset:-2px;border-radius:4px 4px 0 0}
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+  .tab-badge{display:inline-block;background:var(--surface-2);color:var(--muted);font-size:11px;padding:1px 6px;border-radius:8px;margin-left:5px}
+  .tab.active .tab-badge{background:var(--primary-soft);color:var(--primary)}
+  .tab-panel{display:none;padding:16px 20px 20px}.tab-panel.active{display:block}
+  .task-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;margin-bottom:2px;transition:background .1s}
+  .task-row:hover{background:var(--surface-2)}
+  .task-row.done{opacity:.55}.task-row.done .task-label{text-decoration:line-through;color:var(--muted)}
+  .task-row.na{opacity:.35}.task-row.na .task-label{text-decoration:line-through}
+  .task-check{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--surface);font-size:12px;color:transparent}
+  .task-check:hover{border-color:var(--primary)}
+  .task-check.checked{background:var(--green);border-color:var(--green);color:#fff}
+  .task-check.na-check{background:var(--surface-2);border-color:var(--border);color:var(--muted);font-size:10px}
+  .task-content{flex:1;min-width:0}
+  .task-label{font-size:14px;font-weight:500;line-height:1.4;cursor:pointer}
+  .task-detail{font-size:12px;color:var(--muted);margin-top:1px}
+  .task-deadline{display:inline-block;font-size:11px;padding:1px 7px;background:var(--primary-soft);color:var(--primary);border-radius:4px;font-weight:500;margin-left:4px}
+  .task-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .1s}
+  .task-row:hover .task-actions{opacity:1}
+  .task-mini-btn{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:4px;font-family:inherit}
+  .task-mini-btn:hover{background:var(--surface-2);color:var(--text)}.task-mini-btn.active{color:var(--primary);font-weight:600}
+  .task-notes-wrap{display:none;margin-top:6px}.task-notes-wrap.open{display:block}
+  .task-notes{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;min-height:32px;background:#fff;line-height:1.5}
+  .task-notes:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .task-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .filter-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .1s}
+  .filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .filter-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  .tpl-layout{display:grid;grid-template-columns:220px 1fr;gap:14px}
+  @media(max-width:700px){.tpl-layout{grid-template-columns:1fr}}
+  .tpl-list{display:flex;flex-direction:column;gap:3px}
+  .tpl-item{padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:all .1s;background:var(--surface)}
+  .tpl-item:hover{border-color:var(--primary)}
+  .tpl-item.active{background:var(--primary-soft);border-color:var(--primary-border);color:var(--primary);font-weight:600}
+  .tpl-item .tpl-desc{font-size:11px;color:var(--muted);margin-top:2px;font-weight:normal}
+  .tpl-view{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .tpl-toolbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap}
+  .tpl-toolbar .tpl-name{font-size:13px;font-weight:600;color:var(--primary)}
+  .tpl-toolbar .tpl-btns{display:flex;gap:5px;flex-wrap:wrap}
+  .sm-btn{font-size:12px;padding:5px 10px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .1s}
+  .sm-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .sm-btn:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+  .sm-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}.sm-btn.primary:hover{background:#1d4ed8}
+  .tpl-body{padding:16px;white-space:pre-wrap;font-family:"SF Mono",Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:var(--text);min-height:200px;outline:none}
+  .tpl-body.editable:focus{background:#fffbeb}
+  .placeholder-pill{display:inline;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:3px;font-size:11px;font-weight:500}
+  .missing-warn{background:var(--amber-bg);border-left:3px solid var(--amber);padding:8px 12px;font-size:12px;color:#92400e}
+  .tpl-footer{padding:8px 14px;background:var(--surface-2);border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+  .info-card{border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--surface)}
+  .info-card h4{font-size:13px;font-weight:700;margin-bottom:4px}
+  .info-card p{font-size:13px;color:var(--muted);line-height:1.5}
+  .info-divider{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border-light)}
+  .info-divider:first-child{margin-top:0}
+  .resource-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--text);transition:all .1s;margin-bottom:6px}
+  .resource-link:hover{border-color:var(--primary);background:var(--primary-soft)}
+  .resource-link .rl-label{font-size:13px;font-weight:600}.resource-link .rl-desc{font-size:12px;color:var(--muted)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--text);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none;z-index:1000}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  html.auth-gate body.locked .topbar,html.auth-gate body.locked .container,html.auth-gate body.locked .toast{display:none!important}
+  body.locked{overflow:hidden}
+  .login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 32px 28px;box-shadow:var(--shadow);width:100%;max-width:380px}
+  .login-card h2{font-size:22px;font-weight:700;margin-bottom:4px}
+  .login-card .sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+  .login-card label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+  .login-card input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:14px;transition:border-color .15s}
+  .login-card input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .login-card button[type=submit]{width:100%;background:var(--primary);color:#fff;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;transition:background .15s}
+  .login-card button[type=submit]:hover{background:#1d4ed8}
+  .login-card button:disabled{opacity:.5;cursor:not-allowed}
+  .login-error{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
+  .login-hint{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}
+  .login-credit{margin-top:20px;padding-top:14px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+  @media(max-width:640px){.topbar{padding:10px 14px;gap:8px}.topbar-brand h1{font-size:14px}.topbar-bar{width:60px}.container{padding:16px 12px 60px}.tabs{padding:0 14px;overflow-x:auto}.tab-panel{padding:12px 14px 16px}.area-header{padding:14px 14px 0}.tpl-layout{grid-template-columns:1fr}.overview-grid{grid-template-columns:1fr 1fr}}
+  @media print{.topbar,.task-actions,.task-filter,.tpl-toolbar .tpl-btns,.login-overlay{display:none!important}.tab-panel{display:block!important}.area{break-inside:avoid;box-shadow:none}.panel.open .panel-body{display:block}}
+  #import-file{display:none}
+</style>
+</head>
+<body class="locked">
+<div class="login-overlay" id="login-overlay">
+  <form class="login-card" id="login-form" onsubmit="return doLogin(event)">
+    <h2>Log ind</h2>
+    <p class="sub">Efterbehandling efter hussalg</p>
+    <label for="login-user">Brugernavn</label>
+    <input type="text" id="login-user" autocomplete="username" required autofocus>
+    <label for="login-pass">Adgangskode</label>
+    <input type="password" id="login-pass" autocomplete="current-password" required>
+    <button type="submit">Log ind</button>
+    <div class="login-error" id="login-error" role="alert" aria-live="polite"></div>
+    <div class="login-hint">Sessionen udl&oslash;ber efter 30 min. inaktivitet.</div>
+    <div class="login-credit">Created by Q4 Company</div>
+  </form>
+</div>
+<div class="topbar" id="topbar">
+  <div class="topbar-brand"><h1>Efterbehandling efter hussalg</h1><span class="q4">Q4 Company</span></div>
+  <div class="topbar-progress"><div class="topbar-bar"><div class="topbar-bar-fill" id="top-bar-fill"></div></div><span class="topbar-pct" id="top-pct">0%</span></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="exportJSON()" title="Eksporter">&#8595;</button>
+    <button class="icon-btn" onclick="document.getElementById('import-file').click()" title="Importer">&#8593;</button>
+    <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
+    <button class="icon-btn" onclick="printDashboard()" title="Print">&#128424;</button>
+    <button class="icon-btn" onclick="doLogout()" title="Log ud">&#9099;</button>
+    <button class="icon-btn danger" onclick="resetAll()" title="Nulstil">&#8635;</button>
+  </div>
+</div>
+<div class="container">
+  <div class="info-banner" id="disclaimer-banner">
+    <button class="close-banner" onclick="dismissBanner()">&times;</button>
+    Generel information &mdash; ikke juridisk, skattem&aelig;ssig eller forsikringsm&aelig;ssig r&aring;dgivning. Takster og regler &aelig;ndres l&oslash;bende &mdash; verific&eacute;r altid p&aring; <a href="https://skat.dk" target="_blank">skat.dk</a>, <a href="https://tinglysning.dk" target="_blank">tinglysning.dk</a> og <a href="https://borger.dk" target="_blank">borger.dk</a>.
+  </div>
+  <div class="panel" id="sagsdata-panel">
+    <button class="panel-toggle" onclick="togglePanel('sagsdata-panel')">
+      <span>&#128203; Sagsdata <span class="sagsdata-filled" id="sd-count"></span></span>
+      <span class="arrow">&#9660;</span>
+    </button>
+    <div class="panel-body">
+      <div class="panel-hint">Udfyld felterne &mdash; de fletter automatisk ind i alle skabeloner.</div>
+      <div id="sagsdata-form"></div>
+    </div>
+  </div>
+  <div class="overview-grid" id="overview"></div>
+  <div id="area-sections"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+var AUTH_CONFIG={iterations:250000,users:{"kunde":{salt:"2Clbk2X4wzuhJh2mF5y1bA==",hash:"soic9xDhwQHVG2M13ADCa7qv6zboawDbSigmNqEpRsU="}}};
+var AUTH_KEY="efterbehandling-auth-v2",AUTH_ATTEMPTS_KEY="efterbehandling-attempts-v1",SESSION_TIMEOUT_MS=18e5,MAX_FAILED_ATTEMPTS=5;
+function b64ToBytes(b){return Uint8Array.from(atob(b),function(c){return c.charCodeAt(0)})}
+function bytesToB64(b){var s="";for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s)}
+function constantTimeEq(a,b){if(a.length!==b.length)return false;var r=0;for(var i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0}
+async function deriveHash(pw,user,saltB64,iter){var enc=new TextEncoder(),sb=b64ToBytes(saltB64),ub=enc.encode(":"+user),s=new Uint8Array(sb.length+ub.length);s.set(sb,0);s.set(ub,sb.length);var km=await crypto.subtle.importKey("raw",enc.encode(pw),{name:"PBKDF2"},false,["deriveBits"]);var bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:s,iterations:iter,hash:"SHA-256"},km,256);return bytesToB64(new Uint8Array(bits))}
+function getAttempts(){try{return JSON.parse(sessionStorage.getItem(AUTH_ATTEMPTS_KEY)||'{"count":0,"lockUntil":0}')}catch(e){return{count:0,lockUntil:0}}}
+function setAttempts(a){try{sessionStorage.setItem(AUTH_ATTEMPTS_KEY,JSON.stringify(a))}catch(e){}}
+function lockoutSeconds(c){if(c<3)return 0;if(c===3)return 15;if(c===4)return 60;return 300}
+function isLoggedIn(){try{var r=sessionStorage.getItem(AUTH_KEY);if(!r)return false;var t=JSON.parse(r).t;if(!t||Date.now()-t>SESSION_TIMEOUT_MS){sessionStorage.removeItem(AUTH_KEY);return false}return true}catch(e){return false}}
+function refreshSession(){if(isLoggedIn())try{sessionStorage.setItem(AUTH_KEY,JSON.stringify({t:Date.now()}))}catch(e){}}
+function showLogin(){document.body.classList.add("locked");document.getElementById("login-overlay").style.display="flex";setTimeout(function(){var el=document.getElementById("login-user");if(el)el.focus()},50);updateLockoutUI()}
+function hideLogin(){document.body.classList.remove("locked");document.getElementById("login-overlay").style.display="none"}
+var lockoutTimer=null;
+function updateLockoutUI(){var a=getAttempts(),btn=document.querySelector("#login-form button[type=submit]"),err=document.getElementById("login-error");if(a.lockUntil>Date.now()){var s=Math.ceil((a.lockUntil-Date.now())/1000);btn.disabled=true;err.textContent="For mange fors\u00f8g. Pr\u00f8v igen om "+s+"s.";if(!lockoutTimer){lockoutTimer=setInterval(function(){var left=Math.ceil((getAttempts().lockUntil-Date.now())/1000);if(left<=0){clearInterval(lockoutTimer);lockoutTimer=null;btn.disabled=false;err.textContent=""}else{err.textContent="For mange fors\u00f8g. Pr\u00f8v igen om "+left+"s."}},500)}}else{btn.disabled=false}}
+async function doLogin(ev){ev.preventDefault();var at=getAttempts();if(at.lockUntil>Date.now()){updateLockoutUI();return false}var u=document.getElementById("login-user").value.trim().toLowerCase(),p=document.getElementById("login-pass").value,err=document.getElementById("login-error"),btn=document.querySelector("#login-form button[type=submit]");err.textContent="";btn.disabled=true;var ol=btn.textContent;btn.textContent="Verificerer\u2026";var ok=false;try{var rec=AUTH_CONFIG.users[u];if(rec){ok=constantTimeEq(await deriveHash(p,u,rec.salt,AUTH_CONFIG.iterations),rec.hash)}else{await deriveHash(p,"x","AAAAAAAAAAAAAAAAAAAAAA==",AUTH_CONFIG.iterations)}}catch(e){console.error("Login error",e)}btn.textContent=ol;document.getElementById("login-pass").value="";if(ok){try{sessionStorage.setItem(AUTH_KEY,JSON.stringify({t:Date.now()}))}catch(e){}setAttempts({count:0,lockUntil:0});btn.disabled=false;hideLogin()}else{var n=at.count+1,ls=lockoutSeconds(n);setAttempts({count:n,lockUntil:ls>0?Date.now()+ls*1000:0});err.textContent=n>=MAX_FAILED_ATTEMPTS?"Adgangen er midlertidigt sp\u00e6rret.":"Forkert brugernavn eller adgangskode.";document.getElementById("login-pass").focus();updateLockoutUI()}return false}
+function doLogout(){try{sessionStorage.removeItem(AUTH_KEY)}catch(e){}showLogin()}
+document.documentElement.classList.add("auth-gate");
+document.addEventListener("DOMContentLoaded",function(){if(isLoggedIn()){hideLogin();refreshSession()}else{showLogin()}["click","keydown","mousemove","scroll"].forEach(function(ev){window.addEventListener(ev,function(){refreshSession()},{passive:true})});setInterval(function(){if(!isLoggedIn()&&document.getElementById("login-overlay").style.display==="none")showLogin()},60000);if(!localStorage.getItem("efterbehandling-banner-dismissed"))document.getElementById("disclaimer-banner").classList.add("show")});
+
+var SAGSDATA_GROUPS=[{group:"S\u00e6lger",fields:[{key:"saelger",label:"S\u00e6lgers fulde navn"},{key:"saelgerCPR",label:"CPR (valgfri)"},{key:"nyAdresse",label:"Ny adresse"},{key:"saelgerTlf",label:"Telefon"},{key:"saelgerEmail",label:"E-mail"}]},{group:"Ejendom",fields:[{key:"ejendom",label:"Solgt ejendom (adresse)"},{key:"bbr",label:"Ejendoms-/BBR-nr."},{key:"matrikel",label:"Matrikelnr."}]},{group:"Handel",fields:[{key:"koeber",label:"K\u00f8bers navn"},{key:"overtagelse",label:"Overtagelsesdato"},{key:"skaering",label:"Sk\u00e6ringsdato"}]},{group:"Parter",fields:[{key:"maegler",label:"Ejendomsm\u00e6gler"},{key:"advokat",label:"Boligadvokat"}]},{group:"\u00d8konomi",fields:[{key:"bank",label:"Bank"},{key:"realkredit",label:"Realkreditinstitut"},{key:"forsikring",label:"Forsikringsselskab"},{key:"ejerskifte",label:"Ejerskifteforsikring"},{key:"refusionskonto",label:"Konto til refusion"}]}];
+var SAGSDATA_FIELDS=SAGSDATA_GROUPS.reduce(function(a,g){return a.concat(g.fields)},[]);
+function sd(k){var v=(state.sagsdata[k]||"").trim();return v||"["+k+"]"}
+function sdLabel(k){var f=SAGSDATA_FIELDS.find(function(f){return f.key===k});return f?f.label:k}
+
+var AREAS=[
+{id:"folkeregister",name:"Folkeregister & adresse",icon:"\ud83c\udfe0",sub:"Flyt adresse, forsikringer, bank og abonnementer.",
+tasks:[{t:"Folkeregister: adresse\u00e6ndring",m:"borger.dk",d:"5 dage efter flytning"},{t:"Posten: eftersendelse",m:"postnord.dk",d:"Overtagelsesdag"},{t:"Skattestyrelsen: adresse",m:"skat.dk",d:"Straks efter salg"},{t:"Digital Post / e-Boks",m:"",d:"Efter flytning"},{t:"Sundhedskort / l\u00e6ge",m:"borger.dk",d:"Efter flytning"},{t:"Tandl\u00e6ge",m:"",d:"Efter flytning"},{t:"Indboforsikring: adresse\u00e6ndring",m:"",d:"Inden overtagelse"},{t:"Husforsikring: opsigelse",m:"",d:"Pr. overtagelsesdato"},{t:"Ulykkes-/sundhedsforsikring",m:"",d:"Efter flytning"},{t:"Bilforsikring: adresse\u00e6ndring",m:"",d:"Efter flytning"},{t:"Pensions-/livsforsikring",m:"",d:"Efter flytning"},{t:"Bank: adresse\u00e6ndring",m:"",d:"Efter flytning"},{t:"Kreditkortselskaber",m:"",d:"Efter flytning"},{t:"Pensionsselskab (ATP, PFA mv.)",m:"",d:"Efter flytning"},{t:"A-kasse / fagforening",m:"",d:"Efter flytning"},{t:"Arbejdsgiver (l\u00f8nadresse)",m:"",d:"Efter flytning"},{t:"Avisabonnement / magasiner",m:"",d:"Inden flytning"},{t:"Streaming-tjenester",m:"",d:"Efter flytning"},{t:"K\u00f8rekort (adresse)",m:"borger.dk",d:"Inden 14 dage"},{t:"Motorstyrelsen",m:"",d:"Efter flytning"},{t:"Grundejerforening: udmeldelse",m:"",d:"Pr. overtagelsesdato"},{t:"Skole / daginstitution",m:"",d:"F\u00f8r flytning"},{t:"Dyrl\u00e6ge",m:"",d:"Efter flytning"},{t:"Webshops / faste leverand\u00f8rer",m:"",d:"Efter flytning"},{t:"Bibliotek (ny kommune)",m:"",d:"Efter flytning"},{t:"Foreninger / klubber",m:"",d:"Efter flytning"}],
+templates:[
+{id:"adresseaendring",name:"Generisk adresse\u00e6ndring",desc:"Til bank, forsikring, abonnementer",uses:["saelger","ejendom","nyAdresse","overtagelse","saelgerTlf","saelgerEmail","saelgerCPR"],build:function(){return"Emne: Adresse\u00e6ndring \u2014 "+sd("saelger")+"\n\nK\u00e6re modtager,\n\nJeg skriver for at oplyse om min nye adresse pr. "+sd("overtagelse")+":\n\nNy adresse:\n"+sd("nyAdresse")+"\n\nGammel adresse:\n"+sd("ejendom")+"\n\nKontaktoplysninger (u\u00e6ndrede):\nTelefon: "+sd("saelgerTlf")+"\nE-mail: "+sd("saelgerEmail")+"\n\nJeg beder jer opdatere mine stamdata.\n\nVenlig hilsen\n"+sd("saelger")+"\nCPR: "+sd("saelgerCPR")}},
+{id:"husforsikring-opsigelse",name:"Opsigelse af husforsikring",desc:"Opsig pr. overtagelsesdato",uses:["saelger","ejendom","overtagelse","forsikring","refusionskonto","saelgerTlf","saelgerEmail"],build:function(){return"Emne: Opsigelse af husforsikring \u2014 "+sd("ejendom")+"\n\nK\u00e6re "+sd("forsikring")+",\n\nJeg har solgt "+sd("ejendom")+". Overtagelsesdato er "+sd("overtagelse")+".\n\nJeg opsiger hermed husforsikringen med virkning fra denne dato.\n\n1. Bekr\u00e6ftelse p\u00e5 opsigelsen.\n2. Oversigt over eventuel refusion.\n3. Refusion udbetales til: "+sd("refusionskonto")+".\n\nVenlig hilsen\n"+sd("saelger")+"\nTlf: "+sd("saelgerTlf")+"\nE-mail: "+sd("saelgerEmail")}},
+{id:"bank-besked",name:"Meddelelse til bank",desc:"Orient\u00e9r banken om salg",uses:["saelger","ejendom","overtagelse","nyAdresse","bank","saelgerTlf"],build:function(){return"Emne: Salg af bolig \u2014 "+sd("saelger")+"\n\nK\u00e6re "+sd("bank")+",\n\nJeg har solgt "+sd("ejendom")+" med overtagelse "+sd("overtagelse")+".\n\n1. Opdater adresse til "+sd("nyAdresse")+".\n2. Bekr\u00e6ft at boligl\u00e5n er indfriet.\n3. Oplys evt. gebyrer.\n4. Bekr\u00e6ft salgsprovenu er registreret.\n\nVenlig hilsen\n"+sd("saelger")+"\nTlf: "+sd("saelgerTlf")}},
+{id:"grundejerforening",name:"Udmeldelse af grundejerforening",desc:"Stop kontingent pr. overtagelsesdato",uses:["saelger","ejendom","overtagelse","koeber","refusionskonto"],build:function(){return"Emne: Udmeldelse \u2014 "+sd("ejendom")+"\n\nK\u00e6re bestyrelse,\n\nJeg har solgt "+sd("ejendom")+" med overtagelse "+sd("overtagelse")+".\n\nNy ejer: "+sd("koeber")+"\n\n1. Bekr\u00e6ftelse p\u00e5 udmeldelse.\n2. Slutopg\u00f8relse.\n3. Refusion til: "+sd("refusionskonto")+".\n\nVenlig hilsen\n"+sd("saelger")}}
+],
+guide:[{title:"Folkeregister-frist",body:"Flytning skal meldes senest 5 dage efter p\u00e5 borger.dk med MitID."},{title:"Eftersendelse af post",body:"Oprettes p\u00e5 postnord.dk \u2014 s\u00e6t til 6 eller 12 m\u00e5neder."},{title:"K\u00f8rekort",body:"Adresse\u00e6ndring inden 14 dage p\u00e5 borger.dk."},{title:"Find alle abonnementer",body:"Gennemg\u00e5 3 m\u00e5neders kontoudtog \u2014 det er din komplette liste."},{title:"Grundejerforening",body:"Skriv aktiv udmeldelse pr. overtagelsesdato."}],
+resources:[{label:"borger.dk",url:"https://www.borger.dk",desc:"Adresse\u00e6ndring, sundhedskort, k\u00f8rekort"},{label:"postnord.dk",url:"https://www.postnord.dk/modtag-post/flytning-og-eftersendelse",desc:"Eftersendelse af post"},{label:"skat.dk",url:"https://www.skat.dk",desc:"Forskudsopg\u00f8relse og adresse"},{label:"e-Boks",url:"https://www.e-boks.com",desc:"Digital Post"}]
+},
+{id:"forsyninger",name:"Forsyninger & afl\u00e6sninger",icon:"\u26a1",sub:"Slutafl\u00e6s m\u00e5lere, opsig abonnementer, dokument\u00e9r.",
+tasks:[{t:"El: slutafl\u00e6sning + opsigelse",m:"tag foto af m\u00e5ler",d:"Overtagelsesdag"},{t:"El (netselskab): slutafl\u00e6sning",m:"",d:"Overtagelsesdag"},{t:"Vand: slutafl\u00e6sning + opsigelse",m:"tag foto",d:"Overtagelsesdag"},{t:"Varme (fjernvarme): slutafl\u00e6sning",m:"tag foto",d:"Overtagelsesdag"},{t:"Gas: slutafl\u00e6sning + opsigelse",m:"",d:"Overtagelsesdag"},{t:"Oliefyr: opm\u00e5ling restolie",m:"",d:"Overtagelsesdag"},{t:"Internet/bredb\u00e5nd: opsig el. flyt",m:"",d:"Iht. opsigelsesvarsel"},{t:"TV-pakke / streaming-tv",m:"",d:"Iht. opsigelsesvarsel"},{t:"Fastnettelefoni",m:"",d:"Iht. opsigelsesvarsel"},{t:"Renovation: afmelding",m:"kommunen",d:"Overtagelsesdag"},{t:"T\u00f8mning af septiktank",m:"",d:"F\u00f8r overtagelse"},{t:"Skorstensfejer / brandsyn",m:"",d:"F\u00f8r overtagelse"},{t:"Alarm / tyverisikring",m:"",d:"Overtagelsesdag"},{t:"Solcelleanl\u00e6g: nettoafregning",m:"Energistyrelsen",d:"F\u00f8r overtagelse"},{t:"Varmepumpe: servicekontrakt",m:"",d:"Overtagelsesdag"},{t:"Havemand / snerydning",m:"",d:"Overtagelsesdag"},{t:"Pool-/spa-service",m:"",d:"Overtagelsesdag"},{t:"Vandv\u00e6rk (privat): udmeldelse",m:"",d:"Overtagelsesdag"},{t:"Antenneforening: udmeldelse",m:"",d:"Overtagelsesdag"},{t:"Ejendomsservice (vicev\u00e6rt)",m:"",d:"Overtagelsesdag"}],
+templates:[
+{id:"malerskema",name:"M\u00e5lerskema (underskrives af begge)",desc:"F\u00e6lles afl\u00e6sningsdokument",uses:["ejendom","overtagelse","saelger","koeber"],build:function(){return"M\u00c5LERSKEMA \u2014 OVERTAGELSE\n\nEjendom: "+sd("ejendom")+"\nOvertagelse: "+sd("overtagelse")+"\nKlokkeslet: _______\n\n--- EL ---\nLeverand\u00f8r: ________________________  Kundenr.: ________________\nNetselskab: ________________________  M\u00e5lernr.: ________________\nStand (kWh): ____________________  Foto: \u2610 Ja\n\n--- VAND ---\nVandv\u00e6rk: ________________________  Kundenr.: ________________\nM\u00e5lernr.: ________________________\nStand (m\u00b3): ____________________  Foto: \u2610 Ja\n\n--- VARME ---\nLeverand\u00f8r: ________________________  Kundenr.: ________________\nM\u00e5lernr.: ________________________\nStand: ____________________  Foto: \u2610 Ja\n\n--- GAS (hvis relevant) ---\nLeverand\u00f8r: ________________________  Kundenr.: ________________\nStand (m\u00b3): ____________________\n\n--- OLIE (hvis relevant) ---\nRestm\u00e6ngde (liter): ________________\nOvertagelse:  \u2610 Ja  \u2610 Nej    Pris: ________________\n\nUNDERSKRIFTER\n\nS\u00e6lger ("+sd("saelger")+"): _______________________________   Dato: _________\n\nK\u00f8ber ("+sd("koeber")+"): _______________________________   Dato: _________"}},
+{id:"el-slutaflaesning",name:"Slutafl\u00e6sning til el-leverand\u00f8r",desc:"Afslut kundeforhold",uses:["saelger","ejendom","overtagelse","nyAdresse","refusionskonto","saelgerTlf","saelgerEmail"],build:function(){return"Emne: Slutafl\u00e6sning \u2014 "+sd("saelger")+"\n\nK\u00e6re leverand\u00f8r,\n\nJeg har solgt "+sd("ejendom")+" med overtagelse "+sd("overtagelse")+".\n\nM\u00e5lernr.: _______________________________\nStand den "+sd("overtagelse")+": __________ kWh\n\nNy adresse: "+sd("nyAdresse")+"\nTlf: "+sd("saelgerTlf")+"\nE-mail: "+sd("saelgerEmail")+"\n\n1. Bekr\u00e6ftelse p\u00e5 oph\u00f8r.\n2. Slutafregning til ny adresse.\n3. Refusion til konto: "+sd("refusionskonto")+".\n\nVenlig hilsen\n"+sd("saelger")}},
+{id:"internet-flytning",name:"Flytning af internet",desc:"Flyt eller opsig bredb\u00e5nd",uses:["saelger","ejendom","nyAdresse","overtagelse","saelgerTlf"],build:function(){return"Emne: Flytning af bredb\u00e5nd \u2014 "+sd("saelger")+"\n\nK\u00e6re leverand\u00f8r,\n\nJeg flytter fra "+sd("ejendom")+" til "+sd("nyAdresse")+" pr. "+sd("overtagelse")+".\n\n1. Kan abonnementet flyttes?\n2. Dato for ops\u00e6tning p\u00e5 ny adresse.\n3. Evt. gebyrer.\n\nHvis ikke muligt: opsigelse pr. "+sd("overtagelse")+".\n\nVenlig hilsen\n"+sd("saelger")+"\nTlf: "+sd("saelgerTlf")}},
+{id:"solcelle-overdragelse",name:"Solcelle-overdragelse",desc:"Overf\u00f8r nettoafregning til ny ejer",uses:["saelger","ejendom","overtagelse","koeber"],build:function(){return"Emne: Overdragelse af nettoafregning \u2014 "+sd("ejendom")+"\n\nK\u00e6re energiselskab,\n\nJeg har solgt "+sd("ejendom")+" med overtagelse "+sd("overtagelse")+".\n\nInstallationsnr.: _______________________________\nGSRN / m\u00e5lepunkts-ID: _______________________\n\n1. Hvordan overf\u00f8res aftalen?\n2. Dokumenter?\n3. Tidsfrister?\n\nNy ejer: "+sd("koeber")+"\n\nVenlig hilsen\n"+sd("saelger")}},
+{id:"renovation-afmelding",name:"Afmelding af renovation",desc:"Stop dagrenovation",uses:["saelger","ejendom","overtagelse","koeber"],build:function(){return"Emne: Afmelding af renovation \u2014 "+sd("ejendom")+"\n\nK\u00e6re kommune,\n\nJeg har solgt "+sd("ejendom")+" med overtagelse "+sd("overtagelse")+".\n\nNy ejer: "+sd("koeber")+"\n\nBekr\u00e6ftelse + slutopg\u00f8relse \u00f8nskes.\n\nVenlig hilsen\n"+sd("saelger")}}
+],
+guide:[{title:"M\u00e5lere p\u00e5 overtagelsesdagen",body:"Fotograf\u00e9r alle m\u00e5lere \u2014 bedste dokumentation ved tvister."},{title:"M\u00e5lerskema",body:"F\u00e5 k\u00f8ber til at underskrive et f\u00e6lles m\u00e5lerskema."},{title:"Internet/TV opsigelsesvarsel",body:"Kan v\u00e6re op til 3 mdr. \u2014 start i god tid."},{title:"Solcelle-nettoafregning",body:"Aftalen er personlig og kr\u00e6ver aktiv handling."},{title:"Olietankattest",body:"Udlever attest til k\u00f8ber."}],
+resources:[{label:"Energinet",url:"https://energinet.dk",desc:"Find el-leverand\u00f8r og netselskab"},{label:"Skorstensfejerlauget",url:"https://www.skorstensfejer.dk",desc:"Find lokal skorstensfejer"},{label:"Din kommune",url:"https://www.borger.dk/bolig-flytning/kommune",desc:"Renovation, tanksl\u00f8jfning mv."}]
+},
+{id:"skat",name:"Skat & \u00f8konomi",icon:"\ud83d\udcb0",sub:"Refusion, ejendomsv\u00e6rdiskat, tinglysning, l\u00e5n.",
+tasks:[{t:"Refusionsopg\u00f8relse modtaget",m:"m\u00e6gler/advokat",d:"Efter overtagelse"},{t:"Refusionsopg\u00f8relse kontrolleret",m:"",d:"Inden for frist"},{t:"Restk\u00f8besum modtaget",m:"bank",d:"Pr. overtagelsesdato"},{t:"Indfrielse af realkreditl\u00e5n bekr\u00e6ftet",m:"",d:"Pr. overtagelsesdato"},{t:"Indfrielse af bankl\u00e5n bekr\u00e6ftet",m:"",d:"Pr. overtagelsesdato"},{t:"Ejendomsv\u00e6rdiskat: opdater forskudsopg\u00f8relse",m:"skat.dk",d:"Straks efter salg"},{t:"Grundskyld: kontroller refusion",m:"kommunen",d:"Ved refusion"},{t:"Parcelhusreglen: vurd\u00e9r skattefrihed",m:"evt. revisor",d:"F\u00f8r selvangivelse"},{t:"Dokument\u00e9r forbedringsudgifter",m:"",d:"F\u00f8r selvangivelse"},{t:"Indberet evt. fortjeneste",m:"skat.dk",d:"Ved \u00e5rsopg\u00f8relse"},{t:"Afslut f\u00e6lles husholdningskonto",m:"",d:"Efter sidste regning"},{t:"Kontroller at sk\u00f8de er tinglyst",m:"tinglysning.dk",d:"6\u20138 uger"},{t:"Tinglysningsafgift betalt",m:"",d:"Ved tinglysning"},{t:"Slutafregning ejerskifteforsikring",m:"",d:"Efter overtagelse"},{t:"Boligadvokatens slutregning",m:"",d:"Efter afslutning"},{t:"Ejendomsm\u00e6glerens sal\u00e6r",m:"",d:"Ved overtagelse"},{t:"Hjemmekontor-fradrag",m:"evt. revisor",d:"F\u00f8r selvangivelse"},{t:"Afstemning sk\u00e6ringsdato vs. faktiske bel\u00f8b",m:"",d:"Efter overtagelse"}],
+templates:[
+{id:"indfrielse-realkredit",name:"Indfrielsesopg\u00f8relse (realkredit)",desc:"Anmod om opg\u00f8relse",uses:["saelger","ejendom","overtagelse","realkredit","saelgerCPR","saelgerTlf"],build:function(){return"Emne: Indfrielsesopg\u00f8relse \u2014 "+sd("ejendom")+"\n\nK\u00e6re "+sd("realkredit")+",\n\nJeg har solgt "+sd("ejendom")+" med overtagelse "+sd("overtagelse")+".\n\nL\u00e5nenr.: _______________________________\n\nOversigt \u00f8nskes:\n1. Restg\u00e6ld\n2. Opsagt til indfrielse\n3. Differencerente\n4. Kursdifference\n5. Gebyrer\n6. Samlet indfrielsesbel\u00f8b\n\nVenlig hilsen\n"+sd("saelger")+"\nCPR: "+sd("saelgerCPR")+"\nTlf: "+sd("saelgerTlf")}},
+{id:"refusion-spoergsmal",name:"Sp\u00f8rgsm\u00e5l til refusionsopg\u00f8relse",desc:"Bed m\u00e6gler/advokat verificere poster",uses:["saelger","ejendom","maegler","advokat","refusionskonto"],build:function(){return"Emne: Sp\u00f8rgsm\u00e5l til refusion \u2014 "+sd("ejendom")+"\n\nK\u00e6re "+sd("maegler")+" / "+sd("advokat")+",\n\nTak for refusionsopg\u00f8relsen. Sp\u00f8rgsm\u00e5l:\n\n1. _______________________________\n2. _______________________________\n3. _______________________________\n\nN\u00e5r afklaret: overf\u00f8rsel til "+sd("refusionskonto")+".\n\nVenlig hilsen\n"+sd("saelger")}},
+{id:"revisor-parcelhus",name:"Sp\u00f8rgsm\u00e5l til revisor (parcelhusreglen)",desc:"Afklar skattem\u00e6ssig status",uses:["saelger","ejendom","overtagelse","saelgerCPR"],build:function(){return"Emne: Skattepligt ved boligsalg \u2014 "+sd("ejendom")+"\n\nK\u00e6re revisor,\n\nOplysninger:\n- Ejendom: "+sd("ejendom")+"\n- Grundst\u00f8rrelse: __________ m\u00b2\n- Type: \u2610 villa  \u2610 r\u00e6kkehus  \u2610 sommerhus\n- Ejet siden: _______________\n- Beboet i perioden: _______________\n- Udlejning/erhverv: \u2610 Ja \u2610 Nej\n- Anskaffelsessum: __________ kr.\n- Forbedringer: __________ kr.\n- Salgssum: __________ kr.\n- Overtagelse: "+sd("overtagelse")+"\n\n1. Er handlen skattefri?\n2. Estimat af fortjeneste.\n3. Hvilke bilag beh\u00f8ves?\n\nVenlig hilsen\n"+sd("saelger")+"\nCPR: "+sd("saelgerCPR")}},
+{id:"forskudsopgoerelse-guide",name:"Huskeseddel: opdater forskudsopg\u00f8relse",desc:"Trin-for-trin",uses:["overtagelse","ejendom"],build:function(){return"HUSKESEDDEL: OPDATER FORSKUDSOPG\u00d8RELSE\n\nEfter salg af "+sd("ejendom")+" (overtagelse "+sd("overtagelse")+"):\n\n1. Log p\u00e5 skat.dk med MitID\n2. Forskudsopg\u00f8relse \u2192 Ret\n3. Opdater:\n   - Rubrik 220: Ejendomsv\u00e6rdiskat\n   - Rubrik 41/44: Renteudgifter\n   - Rubrik 501: Ejendomsv\u00e6rdi (fjern)\n4. Opdater pendlerfradrag\n5. Kontroll\u00e9r tr\u00e6kprocent\n6. Gem + download kvittering"}}
+],
+guide:[{title:"Parcelhusreglen",body:"Skattefri hvis du selv har boet i boligen og matriklen er under 1.400 m\u00b2."},{title:"Ejendomsv\u00e6rdiskat",body:"Opdat\u00e9r p\u00e5 skat.dk straks \u2014 ellers efterregning."},{title:"Tinglysning",body:"Afgift 2026: 1.850 kr. + 0,6 % af k\u00f8besum. Tjek efter 6\u20138 uger."},{title:"Forbedringsudgifter",body:"Nyt tag, energirenovering mv. reducerer evt. skattepligtig fortjeneste."}],
+resources:[{label:"skat.dk",url:"https://www.skat.dk",desc:"Forskudsopg\u00f8relse, \u00e5rsopg\u00f8relse"},{label:"tinglysning.dk",url:"https://www.tinglysning.dk",desc:"Tingbogsattest og sk\u00f8de"},{label:"Parcelhusreglen",url:"https://skat.dk/borger/bolig/salg-af-bolig",desc:"SKATs vejledning om skattefrihed"},{label:"Vurderingsstyrelsen",url:"https://www.vurderingsportalen.dk",desc:"Ejendomsvurderinger"}]
+},
+{id:"dokumenter",name:"Dokumentarkiv & garantier",icon:"\ud83d\udcc1",sub:"Arkiv\u00e9r alt \u2014 dit sikkerhedsnet i 10 \u00e5r.",
+tasks:[{t:"K\u00f8bsaftale (underskrevet)",m:"min. 10 \u00e5r",d:"Permanent"},{t:"Tingbogsattest",m:"",d:"Permanent"},{t:"Sk\u00f8de (tinglyst kopi)",m:"",d:"Permanent"},{t:"Refusionsopg\u00f8relse",m:"min. 10 \u00e5r",d:"Permanent"},{t:"Tilstandsrapport",m:"10-\u00e5rsansvar",d:"Permanent"},{t:"Elinstallationsrapport",m:"10-\u00e5rsansvar",d:"Permanent"},{t:"Energim\u00e6rkning",m:"",d:"Permanent"},{t:"Ejerskifteforsikring (police)",m:"",d:"Forsikringens l\u00f8betid"},{t:"BBR-meddelelse",m:"bbr.dk",d:"Permanent"},{t:"Lokalplan",m:"kommunens plan",d:"Permanent"},{t:"Servitutter",m:"tinglysning.dk",d:"Permanent"},{t:"Byggetilladelser",m:"",d:"Permanent"},{t:"F\u00e6rdigmeldinger",m:"",d:"Permanent"},{t:"H\u00e5ndv\u00e6rker-fakturaer + garantier",m:"5-\u00e5rsgaranti",d:"Garantiens l\u00f8betid"},{t:"Tagrenovering: garanti",m:"",d:"Garantiens l\u00f8betid"},{t:"Vinduer/d\u00f8re: garanti",m:"",d:"Garantiens l\u00f8betid"},{t:"Varmepumpe/kedel: garanti",m:"",d:"Garantiens l\u00f8betid"},{t:"Solcelleanl\u00e6g: dokumentation",m:"",d:"Permanent"},{t:"Kloakarbejde: TV-inspektion",m:"",d:"Permanent"},{t:"Skorstensfejerattest",m:"",d:"Permanent"},{t:"Olietankattest",m:"",d:"Permanent"},{t:"Slutafl\u00e6sninger (el, vand, varme)",m:"",d:"Min. 3 \u00e5r"},{t:"Korrespondance med k\u00f8ber",m:"",d:"Min. 10 \u00e5r"},{t:"Mangellog / reklamationer",m:"",d:"Min. 10 \u00e5r"},{t:"Billeder af ejendommens stand",m:"",d:"Min. 10 \u00e5r"},{t:"M\u00e5lerskema (underskrevet)",m:"",d:"Min. 10 \u00e5r"},{t:"Dispensationer fra kommunen",m:"",d:"Permanent"}],
+templates:[
+{id:"reklamation-modtagelse",name:"Bekr\u00e6ftelse af reklamation",desc:"F\u00f8rste svar \u2014 k\u00f8b dig tid",uses:["saelger","ejendom","saelgerTlf","saelgerEmail"],build:function(){return"Emne: Bekr\u00e6ftelse p\u00e5 reklamation \u2014 "+sd("ejendom")+"\n\nK\u00e6re k\u00f8ber,\n\nTak for din henvendelse vedr. "+sd("ejendom")+".\n\nJeg bekr\u00e6fter modtagelsen og gennemg\u00e5r sagen inden for 2\u20133 uger.\n\nSend venligst:\n1. Billeder af forholdet.\n2. Evt. vurderinger/tilbud.\n3. Hvorn\u00e5r forholdet blev opdaget.\n\nVenlig hilsen\n"+sd("saelger")+"\nTlf: "+sd("saelgerTlf")+"\nE-mail: "+sd("saelgerEmail")}},
+{id:"reklamation-svar",name:"Svar p\u00e5 reklamation",desc:"N\u00e5r forholdet er oplyst i rapporter",uses:["saelger","ejendom","ejerskifte"],build:function(){return"Emne: Svar p\u00e5 reklamation \u2014 "+sd("ejendom")+"\n\nK\u00e6re k\u00f8ber,\n\nJeg har gennemg\u00e5et sagen:\n\n1. Tilstandsrapporten pkt. _____ beskriver forholdet (karakter _____).\n2. K\u00f8bsaftalen begr\u00e6nser s\u00e6lgers ansvar.\n3. Kontakt ejerskifteforsikringen hos "+sd("ejerskifte")+".\n\nVenlig hilsen\n"+sd("saelger")}},
+{id:"arkiv-oversigt",name:"Salgsmappe \u2014 forside",desc:"Oversigt til din mappe",uses:["saelger","ejendom","koeber","overtagelse","bbr","matrikel","advokat","maegler","ejerskifte"],build:function(){return"SALGSMAPPE \u2014 "+sd("ejendom")+"\n\nEjendom: "+sd("ejendom")+"\nBBR: "+sd("bbr")+"\nMatrikel: "+sd("matrikel")+"\n\nS\u00e6lger: "+sd("saelger")+"\nK\u00f8ber: "+sd("koeber")+"\nOvertagelse: "+sd("overtagelse")+"\nM\u00e6gler: "+sd("maegler")+"\nAdvokat: "+sd("advokat")+"\nEjerskifte: "+sd("ejerskifte")+"\n\nINDHOLD:\n01 Handlen  \u2610 K\u00f8bsaftale  \u2610 Sk\u00f8de  \u2610 Tingbogsattest  \u2610 Refusion\n02 Rapporter  \u2610 Tilstand  \u2610 El  \u2610 Energi  \u2610 Ejerskifte\n03 Offentligt  \u2610 BBR  \u2610 Lokalplan  \u2610 Servitutter\n04 Garantier  \u2610 ___  \u2610 ___  \u2610 ___\n05 Forsyninger  \u2610 M\u00e5lerskema  \u2610 Slutafl\u00e6sninger  \u2610 Attester\n06 Korrespondance + billeder\n\n\u26a0 Opbevares minimum 10 \u00e5r."}}
+],
+guide:[{title:"10-\u00e5rs-reglen",body:"K\u00f8ber kan reklamere i op til 10 \u00e5r."},{title:"Ansvarsfraskrivelse",body:"Med tilstandsrapport + elrapport + ejerskifteforsikring er s\u00e6lgers ansvar st\u00e6rkt begr\u00e6nset."},{title:"Mappestruktur",body:"Brug \u00c5\u00c5\u00c5\u00c5-MM-DD Dokumenttype.pdf."},{title:"Ved reklamation",body:"Bekr\u00e6ft modtagelse, gennemg\u00e5 rapporter, svar fagligt."}],
+resources:[{label:"tinglysning.dk",url:"https://www.tinglysning.dk",desc:"Tingbogsattest (gratis med MitID)"},{label:"bbr.dk",url:"https://bbr.dk",desc:"BBR-meddelelse"},{label:"plandata.dk",url:"https://www.plandata.dk",desc:"Lokalplaner"},{label:"boligejer.dk",url:"https://www.boligejer.dk",desc:"Energim\u00e6rkning"}]
+}
+];
+
+var STORAGE_KEY="efterbehandling-hussalg-v2";var state=load()||initState();var uiState={activeTabs:{},activeTemplates:{},taskFilter:{}};
+function initState(){var s={sagsdata:{},tasks:{}};AREAS.forEach(function(a){s.tasks[a.id]=a.tasks.map(function(){return{status:"pending",notes:""}})});return s}
+function load(){try{var raw=localStorage.getItem(STORAGE_KEY);if(!raw){var v1=localStorage.getItem("efterbehandling-hussalg-v1");if(v1)return reconcile(JSON.parse(v1));return null}return reconcile(JSON.parse(raw))}catch(e){return null}}
+function reconcile(p){if(!p.tasks)p.tasks={};AREAS.forEach(function(a){if(!p.tasks[a.id])p.tasks[a.id]=[];while(p.tasks[a.id].length<a.tasks.length)p.tasks[a.id].push({status:"pending",notes:""})});if(!p.sagsdata)p.sagsdata={};return p}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function esc(s){if(s==null)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function showToast(m){var el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(showToast._t);showToast._t=setTimeout(function(){el.classList.remove("show")},2200)}
+function togglePanel(id){document.getElementById(id).classList.toggle("open")}
+function dismissBanner(){document.getElementById("disclaimer-banner").classList.remove("show");localStorage.setItem("efterbehandling-banner-dismissed","1")}
+function progress(id){var t=state.tasks[id],total=t.filter(function(x){return x.status!=="na"}).length,done=t.filter(function(x){return x.status==="done"}).length;return{total:total,done:done,pct:total===0?0:Math.round(done/total*100)}}
+function totalProgress(){var total=0,done=0;AREAS.forEach(function(a){var p=progress(a.id);total+=p.total;done+=p.done});return{total:total,done:done,pct:total===0?0:Math.round(done/total*100)}}
+function renderSagsdata(){var form=document.getElementById("sagsdata-form");form.innerHTML="";SAGSDATA_GROUPS.forEach(function(grp){var t=document.createElement("div");t.className="form-group-title";t.textContent=grp.group;form.appendChild(t);var g=document.createElement("div");g.className="form-grid";grp.fields.forEach(function(f){var w=document.createElement("div");w.className="form-field";var l=document.createElement("label");l.textContent=f.label;var inp=document.createElement("input");inp.type="text";inp.value=state.sagsdata[f.key]||"";inp.placeholder=f.label;inp.addEventListener("input",function(e){state.sagsdata[f.key]=e.target.value;save();updateSdCount();refreshOpenTemplates()});w.appendChild(l);w.appendChild(inp);g.appendChild(w)});form.appendChild(g)});updateSdCount()}
+function updateSdCount(){var n=0;SAGSDATA_FIELDS.forEach(function(f){if((state.sagsdata[f.key]||"").trim())n++});document.getElementById("sd-count").textContent=n+" / "+SAGSDATA_FIELDS.length+" udfyldt"}
+function renderOverview(){var c=document.getElementById("overview");c.innerHTML="";AREAS.forEach(function(a){var p=progress(a.id),d=document.createElement("div");d.className="overview-card";d.tabIndex=0;d.onclick=function(){document.getElementById("area-"+a.id).scrollIntoView({behavior:"smooth",block:"start"})};d.innerHTML='<div class="oc-icon">'+a.icon+'</div><div class="oc-name">'+esc(a.name)+'</div><div class="oc-bar"><div class="oc-bar-fill" style="width:'+p.pct+'%"></div></div><div class="oc-stat"><strong>'+p.done+'</strong> af '+p.total+' udf\u00f8rt</div>';c.appendChild(d)});updateTopBar()}
+function updateTopBar(){var t=totalProgress();document.getElementById("top-pct").textContent=t.pct+"%";document.getElementById("top-bar-fill").style.width=t.pct+"%"}
+function renderAreas(){var c=document.getElementById("area-sections");c.innerHTML="";AREAS.forEach(function(a){var s=document.createElement("div");s.className="area";s.id="area-"+a.id;var at=uiState.activeTabs[a.id]||"tasks";s.innerHTML='<div class="area-header"><div class="area-title">'+a.icon+" "+esc(a.name)+'</div><div class="area-sub">'+esc(a.sub)+'</div></div><div class="tabs" role="tablist"><button class="tab '+(at==="tasks"?"active":"")+'" data-tab="tasks" data-area="'+a.id+'">Opgaver <span class="tab-badge">'+a.tasks.length+'</span></button><button class="tab '+(at==="templates"?"active":"")+'" data-tab="templates" data-area="'+a.id+'">Skabeloner <span class="tab-badge">'+a.templates.length+'</span></button><button class="tab '+(at==="info"?"active":"")+'" data-tab="info" data-area="'+a.id+'">Info & links</button></div><div class="tab-panel '+(at==="tasks"?"active":"")+'" data-panel="tasks" id="tasks-panel-'+a.id+'"></div><div class="tab-panel '+(at==="templates"?"active":"")+'" data-panel="templates" id="tpl-panel-'+a.id+'"></div><div class="tab-panel '+(at==="info"?"active":"")+'" data-panel="info" id="info-panel-'+a.id+'"></div>';c.appendChild(s);s.querySelectorAll(".tab").forEach(function(btn){btn.onclick=function(){uiState.activeTabs[a.id]=btn.dataset.tab;s.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t===btn)});s.querySelectorAll(".tab-panel").forEach(function(p){p.classList.toggle("active",p.dataset.panel===btn.dataset.tab)})}});renderTasks(a,s.querySelector("#tasks-panel-"+a.id));renderTemplates(a,s.querySelector("#tpl-panel-"+a.id));renderInfo(a,s.querySelector("#info-panel-"+a.id))})}
+function renderTasks(area,container){var filter=uiState.taskFilter[area.id]||"all";container.innerHTML='<div class="task-filter"><button class="filter-btn '+(filter==="all"?"active":"")+'" onclick="setFilter(\''+area.id+"','all')\">Alle</button><button class=\"filter-btn "+(filter==="todo"?"active":"")+'" onclick="setFilter(\''+area.id+"','todo')\">Ikke udf\u00f8rt</button><button class=\"filter-btn "+(filter==="done"?"active":"")+'" onclick="setFilter(\''+area.id+"','done')\">Udf\u00f8rt</button></div>";var list=document.createElement("div");area.tasks.forEach(function(t,i){var ts=state.tasks[area.id][i];if(filter==="todo"&&(ts.status==="done"||ts.status==="na"))return;if(filter==="done"&&ts.status!=="done")return;var row=document.createElement("div");row.className="task-row"+(ts.status==="done"?" done":"")+(ts.status==="na"?" na":"");var chk=document.createElement("div");chk.className="task-check"+(ts.status==="done"?" checked":"")+(ts.status==="na"?" na-check":"");chk.innerHTML=ts.status==="done"?"\u2713":(ts.status==="na"?"\u2014":"");chk.onclick=function(){if(ts.status==="na")return;state.tasks[area.id][i].status=ts.status==="done"?"pending":"done";save();renderTasks(area,container);renderOverview()};var content=document.createElement("div");content.className="task-content";var hasNotes=(ts.notes||"").trim().length>0;var lbl=document.createElement("div");lbl.className="task-label";lbl.innerHTML=esc(t.t)+(t.d?' <span class="task-deadline">'+esc(t.d)+"</span>":"");lbl.onclick=function(){var w=content.querySelector(".task-notes-wrap");w.classList.toggle("open");if(w.classList.contains("open"))w.querySelector("textarea").focus()};content.appendChild(lbl);if(t.m){var det=document.createElement("div");det.className="task-detail";det.textContent=t.m;content.appendChild(det)}var nw=document.createElement("div");nw.className="task-notes-wrap"+(hasNotes?" open":"");var ta=document.createElement("textarea");ta.className="task-notes";ta.placeholder="Tilf\u00f8j noter\u2026";ta.value=ts.notes||"";ta.addEventListener("input",(function(idx){return function(e){state.tasks[area.id][idx].notes=e.target.value;save()}})(i));nw.appendChild(ta);content.appendChild(nw);var acts=document.createElement("div");acts.className="task-actions";var nb=document.createElement("button");nb.className="task-mini-btn";nb.textContent="Note";nb.onclick=function(){var w=content.querySelector(".task-notes-wrap");w.classList.toggle("open");if(w.classList.contains("open"))w.querySelector("textarea").focus()};var nab=document.createElement("button");nab.className="task-mini-btn"+(ts.status==="na"?" active":"");nab.textContent=ts.status==="na"?"Tilf\u00f8j":"N/A";nab.onclick=(function(idx){return function(){state.tasks[area.id][idx].status=state.tasks[area.id][idx].status==="na"?"pending":"na";save();renderTasks(area,container);renderOverview()}})(i);acts.appendChild(nb);acts.appendChild(nab);row.appendChild(chk);row.appendChild(content);row.appendChild(acts);list.appendChild(row)});container.appendChild(list)}
+function setFilter(areaId,f){uiState.taskFilter[areaId]=f;var area=AREAS.find(function(a){return a.id===areaId});renderTasks(area,document.getElementById("tasks-panel-"+areaId))}
+function renderTemplates(area,container){var aid=uiState.activeTemplates[area.id]||area.templates[0].id;container.innerHTML='<div class="tpl-layout"><div class="tpl-list" id="tlist-'+area.id+'"></div><div id="tview-'+area.id+'"></div></div>';var list=container.querySelector("#tlist-"+area.id);area.templates.forEach(function(tpl){var item=document.createElement("div");item.className="tpl-item"+(tpl.id===aid?" active":"");item.innerHTML="<div>"+esc(tpl.name)+'</div><div class="tpl-desc">'+esc(tpl.desc)+"</div>";item.onclick=function(){uiState.activeTemplates[area.id]=tpl.id;renderTemplates(area,container)};list.appendChild(item)});renderTemplateView(area,aid,container.querySelector("#tview-"+area.id))}
+function renderTemplateView(area,tid,container){var tpl=area.templates.find(function(t){return t.id===tid})||area.templates[0];if(!tpl){container.innerHTML="<em>Ingen skabeloner.</em>";return}var body=tpl.build();var missing=(tpl.uses||[]).filter(function(k){return!(state.sagsdata[k]||"").trim()});var mh=missing.length?'<div class="missing-warn">\u26a0 Udfyld i Sagsdata: '+missing.map(function(k){return sdLabel(k)}).join(", ")+"</div>":"";var hl=esc(body).replace(/\[([a-zA-Z]+)\]/g,function(m,key){if(!SAGSDATA_FIELDS.some(function(f){return f.key===key}))return m;return'<span class="placeholder-pill">'+sdLabel(key)+"</span>"});container.innerHTML='<div class="tpl-view"><div class="tpl-toolbar"><span class="tpl-name">'+esc(tpl.name)+'</span><div class="tpl-btns"><button class="sm-btn" onclick="copyTemplate(\''+area.id+"','"+tpl.id+"')\">📋 Kopi\u00e9r</button><button class=\"sm-btn\" onclick=\"downloadTemplate('"+area.id+"','"+tpl.id+"')\">↓ .txt</button><button class=\"sm-btn\" onclick=\"openMail('"+area.id+"','"+tpl.id+"')\">✉ Mail</button><button class=\"sm-btn primary\" onclick=\"editableToggle(this)\">✎ Redig\u00e9r</button></div></div>"+mh+'<pre class="tpl-body" data-area="'+area.id+'" data-tpl="'+tpl.id+'">'+hl+'</pre><div class="tpl-footer">Bruger: '+((tpl.uses||[]).map(function(k){return"<code>"+esc(sdLabel(k))+"</code>"}).join(" \u00b7 ")||"ingen")+"</div></div>"}
+function refreshOpenTemplates(){AREAS.forEach(function(a){if(uiState.activeTabs[a.id]==="templates"){var v=document.getElementById("tview-"+a.id);var id=uiState.activeTemplates[a.id]||a.templates[0].id;if(v&&id)renderTemplateView(a,id,v)}})}
+function renderInfo(area,container){var h='<div class="info-divider">Guide</div><div class="info-grid">';area.guide.forEach(function(g){h+='<div class="info-card"><h4>'+esc(g.title)+"</h4><p>"+esc(g.body)+"</p></div>"});h+='</div><div class="info-divider">Links & ressourcer</div>';area.resources.forEach(function(r){h+='<a class="resource-link" href="'+esc(r.url)+'" target="_blank" rel="noopener"><div><div class="rl-label">'+esc(r.label)+' \u2197</div><div class="rl-desc">'+esc(r.desc)+"</div></div></a>"});container.innerHTML=h}
+function getTemplateBody(aid,tid){var area=AREAS.find(function(a){return a.id===aid});var tpl=area.templates.find(function(t){return t.id===tid});var el=document.querySelector('.tpl-body[data-area="'+aid+'"][data-tpl="'+tid+'"]');if(el&&el.classList.contains("editable"))return el.innerText;return tpl.build()}
+function copyTemplate(a,t){navigator.clipboard.writeText(getTemplateBody(a,t)).then(function(){showToast("Kopieret til udklipsholder")},function(){showToast("Kunne ikke kopiere")})}
+function downloadTemplate(aid,tid){var area=AREAS.find(function(a){return a.id===aid});var tpl=area.templates.find(function(t){return t.id===tid});var blob=new Blob([getTemplateBody(aid,tid)],{type:"text/plain;charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=tpl.id+".txt";a.click();showToast("Fil hentet")}
+function openMail(aid,tid){var body=getTemplateBody(aid,tid),subj="",mb=body,lines=body.split("\n");if(lines[0].indexOf("Emne:")===0){subj=lines[0].replace(/^Emne:\s*/,"").trim();mb=lines.slice(1).join("\n").replace(/^\n+/,"")}window.location.href="mailto:?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(mb)}
+function editableToggle(btn){var tb=btn.closest(".tpl-toolbar"),body=tb.nextElementSibling;if(body.classList.contains("missing-warn"))body=body.nextElementSibling;var ed=body.classList.toggle("editable");body.contentEditable=ed?"true":"false";btn.textContent=ed?"\u2713 F\u00e6rdig":"\u270e Redig\u00e9r";if(ed)body.focus()}
+function exportJSON(){var d=JSON.parse(JSON.stringify(state));d.exportedAt=new Date().toISOString();d.version=2;var blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);var nm=(state.sagsdata.ejendom||"hussalg").replace(/[^a-zA-Z0-9\u00e6\u00f8\u00e5\u00c6\u00d8\u00c5 ]+/g,"").replace(/\s+/g,"_");a.download="efterbehandling_"+nm+"_"+new Date().toISOString().slice(0,10)+".json";a.click();showToast("Data eksporteret")}
+function importJSON(ev){var file=ev.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){try{var p=JSON.parse(e.target.result);if(p.sagsdata)state.sagsdata=p.sagsdata;if(p.tasks){AREAS.forEach(function(a){if(p.tasks[a.id]){state.tasks[a.id]=p.tasks[a.id];while(state.tasks[a.id].length<a.tasks.length)state.tasks[a.id].push({status:"pending",notes:""})}})}save();renderAll();showToast("Data importeret")}catch(err){alert("Kunne ikke l\u00e6se filen: "+err.message)}};reader.readAsText(file)}
+function resetAll(){if(!confirm("Nulstil alle data? Kan ikke fortrydes."))return;state=initState();save();renderAll();showToast("Alt nulstillet")}
+function printDashboard(){AREAS.forEach(function(a){uiState.activeTabs[a.id]="tasks"});renderAreas();setTimeout(function(){window.print()},100)}
+function renderAll(){renderSagsdata();renderOverview();renderAreas()}
+renderAll();
+</script>
+</body>
+</html>
